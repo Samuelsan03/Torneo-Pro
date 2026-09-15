@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torneo Pro - Edición Final</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #64748b;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --line-color: #cbd5e1;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --modal-overlay: rgba(15, 23, 42, 0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, 'Microsoft YaHei', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header & Config --- */
+        header {
+            background-color: var(--surface);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            position: relative;
+        }
+
+        h1 { font-size: 1.5rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem; }
+
+        .lang-selector-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translateY(-120%);
+        }
+        
+        @media (min-width: 768px) {
+            .lang-selector-container {
+                position: relative;
+                transform: none;
+                margin-left: auto;
+                margin-right: 1rem;
+            }
+        }
+
+        select#langSelector {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid var(--line-color);
+            border-radius: 4px;
+        }
+
+        .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+        select, button, textarea, input[type="text"], input[type="number"], input[type="color"] {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--line-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+            resize: none; 
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        button:hover { background-color: var(--primary-dark); }
+        button.secondary { background-color: white; color: var(--text); border: 1px solid var(--line-color); }
+        button.secondary:hover { background-color: #f8fafc; }
+        button.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        button.outline:hover { background: #eff6ff; }
+
+        .toggle-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; font-size: 0.9rem;}
+        
+        /* --- Setup Area --- */
+        #setup-area {
+            max-width: 800px;
+            margin: 2rem auto;
+            width: 90%;
+            display: none;
+        }
+        #setup-area.active { display: block; animation: fadeIn 0.3s ease; }
+
+        .input-group {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .input-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .input-group label { font-weight: 600; }
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            margin-bottom: 1rem; 
+            line-height: 1.5;
+        }
+        .helper-text { font-size: 0.85rem; color: var(--text-light); }
+
+        /* --- Bracket Container --- */
+        .bracket-wrapper {
+            flex: 1;
+            overflow: auto;
+            padding: 3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-items: safe center;
+            position: relative;
+        }
+
+        .bracket {
+            display: flex;
+            gap: 4rem;
+            margin: 0 auto;
+            min-width: min-content;
+            transition: transform 0.2s ease;
+            transform-origin: top center;
+        }
+
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            min-width: 220px;
+            align-items: flex-start; 
+            padding-top: 1.5rem; 
+            position: relative;
+        }
+
+        .round-title {
+            position: absolute;
+            top: -1.5rem;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            left: 0;
+        }
+
+        /* --- Match Card --- */
+        .match {
+            background: var(--surface);
+            border: 1px solid var(--line-color);
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            cursor: default;
+            transition: border-color 0.2s;
+        }
+
+                .match.third-place {
+            margin-top: 0.5rem;
+        }
+
+        /* ✅ NUEVO: el último round con 3er puesto centra la final y deja
+           el 3er/4to puesto fuera del flujo flex (absolute) para que no
+           desplace la final ni desalinee las líneas SVG de las semifinales. */
+        .round.final-round {
+            justify-content: center;
+        }
+        .third-wrapper {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(50% + 15.55rem); /* ✅ bajado 2.5rem más (antes 3.5rem) sin tocar la final */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .third-place-separator {
+            width: 100%;
+            text-align: center;
+            border-top: 1px dashed var(--line-color);
+            margin: 0.5rem 0 0.25rem 0;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .match.playable:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+        }
+        .match.playable::before {
+            content: '✏️';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            color: var(--primary);
+        }
+        .match.playable:hover::before { opacity: 0.2; }
+
+        .bracket {
+    display: flex;
+    gap: 4rem;
+    margin: 0 auto;
+    min-width: min-content;
+    transition: transform 0.2s ease;
+    transform-origin: top center;
+    position: relative; /* ✅ NUEVO: ancla el SVG overlay */
+}
+
+/* ✅ NUEVO: estilo del overlay SVG */
+#bracket-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 0;
+}
+
+        .team {
+            padding: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f1f5f9;
+            position: relative;
+        }
+        .team:last-child { border-bottom: none; }
+
+        .team.winner { font-weight: 600; }
+        .team.winner .team-name::after { content: '👑'; font-size: 0.8rem; margin-left: 5px; }
+        .team.loser { opacity: 0.6; }
+
+        .team-name { flex: 1; }
+        .team-score { 
+            font-weight: bold; 
+            font-size: 1.1rem; 
+            width: 40px; 
+            text-align: center; 
+            min-width: 40px;
+        }
+
+        .score-green { color: var(--success); }
+        .score-red { color: var(--danger); }
+
+        .match.finished { border-color: var(--success); }
+
+        /* --- Modales --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px; /* Aumentado para acomodar columnas */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.2s;
+        }
+        .modal-overlay.open .modal { transform: scale(1); }
+
+        .modal h2 { margin-bottom: 1.5rem; text-align: center; color: var(--text); font-size: 1.2rem;}
+
+        /* --- Estilos Antiguos (Ocultos o reutilizados) --- */
+        .color-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .color-label { font-size: 0.9rem; font-weight: 600; }
+        .color-inputs { display: flex; gap: 5px; }
+        .color-inputs input[type="text"] { width: 100px; }
+        
+        /* --- NUEVO DISEÑO DEL MODAL DE RESULTADOS --- */
+        
+        /* Contenedor principal de las dos columnas */
+        .modal-body-columns {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Columna individual del jugador */
+        .player-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            gap: 0.8rem;
+        }
+
+        /* Separador VS */
+        .vs-divider {
+            display: flex;
+            align-items: center;
+            font-weight: 900;
+            color: var(--text-light);
+            font-style: italic;
+            font-size: 1.2rem;
+        }
+
+        .player-name-display { 
+            font-weight: bold; 
+            font-size: 1rem; 
+            text-align: center;
+            word-break: break-word;
+            line-height: 1.2;
+            min-height: 2.4em; /* Asegurar altura uniforme */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-box {
+            width: 80px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 0.5rem;
+            border: 1px solid var(--line-color);
+            border-radius: var(--border-radius);
+            background-color: #ffffff;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .score-box:focus { border-color: var(--primary); }
+        .score-box::-webkit-outer-spin-button,
+        .score-box::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .score-box {
+            -moz-appearance: textfield;
+        }
+
+        .btn-winner-column {
+            width: 100%;
+            padding: 0.6rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-winner-column:hover { background-color: var(--primary-dark); }
+
+        /* Footer con Cancelar */
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid var(--line-color);
+            padding-top: 1.5rem;
+        }
+        
+        .btn-cancel-full {
+            background-color: var(--secondary);
+            color: white;
+            padding: 0.6rem 2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-cancel-full:hover { background-color: #475569; }
+
+        /* --- Otros Controles --- */
+        
+        #zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        #zoom-controls.active { display: flex; }
+        
+        #zoom-slider { width: 150px; cursor: pointer; }
+
+        /* Estilo para el valor del zoom */
+        #zoom-value {
+            font-family: monospace;
+            font-weight: bold;
+            min-width: 45px;
+            display: inline-block;
+        }
+
+                /* --- Export Format Grid --- */
+        .export-format-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .export-format-btn {
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--line-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto auto;
+            column-gap: 1rem;
+            align-items: center;
+            text-align: left;
+            transition: all 0.2s;
+            font-weight: normal;
+        }
+        .export-format-btn:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            transform: translateY(-1px);
+        }
+        .export-format-btn .format-icon {
+            grid-row: 1 / 3;
+            font-size: 1.8rem;
+        }
+        .export-format-btn .format-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary-dark);
+        }
+        .export-format-btn .format-desc {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* --- Toast --- */
+        #toast {
+            position: fixed; bottom: 80px; right: 20px;
+            background: #333; color: #fff;
+            padding: 12px 24px; border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(100px); opacity: 0; transition: all 0.3s;
+            z-index: 2000;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+        #toast.error { background-color: var(--danger); }
+        #toast.success { background-color: var(--success); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <!-- Language Selector -->
+            <div class="lang-selector-container">
+                <select id="langSelector">
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="zh">🇨🇳 中文</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                </select>
+            </div>
+
+            <h1 data-i18n="app_title">🏆 Torneo Pro</h1>
+            <div class="controls">
+                <button class="secondary" id="btn-save" data-i18n="btn_save" title="Guardar progreso">💾 Guardar</button>
+                <button class="secondary" id="btn-load" data-i18n="btn_load" title="Cargar progreso">📂 Importar</button>
+                <input type="file" id="file-input" accept=".json" style="display: none;">
+                
+                                <button class="outline" id="btn-colors" data-i18n="btn_colors" title="Configurar colores de podio">🎨 Colores</button>
+                <button class="outline" id="btn-export" data-i18n="btn_export" title="Exportar bracket como imagen">🖼️ Exportar</button>                <label class="toggle-label">
+                    <input type="checkbox" id="third-place-toggle">
+                    <small data-i18n="label_3rd">3er y 4to Puesto</small>
+                </label>
+                <select id="participants">
+                    <option value="4" data-i18n="opt_4">4 (Semis)</option>
+                    <option value="8" data-i18n="opt_8">8 (Cuartos)</option>
+                    <option value="16" selected data-i18n="opt_16">16 (Octavos)</option>
+                    <option value="32" data-i18n="opt_32">32 (Dieciseisavos)</option>
+                    <option value="64" data-i18n="opt_64">64 (Treintaidosavos)</option>
+                </select>
+                <button id="btn-create" class="secondary" data-i18n="btn_create">Crear Bracket</button>
+                <button class="outline" id="btn-edit-participants" data-i18n="btn_edit_participants">✏️ Editar</button>
+                <button id="btn-reset" data-i18n="btn_reset">Reiniciar</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Configuración -->
+        <section id="setup-area">
+            <div class="input-group">
+                <div class="input-header">
+                    <label data-i18n="setup_participants">Participantes</label>
+                    <button id="btn-shuffle" class="outline" data-i18n="btn_shuffle" title="Mezclar lista">🔀 Mezclar</button>
+                </div>
+                <!-- TEXTO ACTUALIZADO DINÁMICAMENTE POR JS -->
+                <p class="helper-text" id="participants-count-hint">Participantes: 0 / 16</p>
+                <textarea id="names-input" data-i18n-placeholder="setup_placeholder" placeholder="Juan Pérez&#10;María Gómez&#10;..."></textarea>
+                <button id="btn-start-tournament" style="width: 100%" data-i18n="btn_start">Generar Sorteo e Iniciar</button>
+            </div>
+        </section>
+
+        <!-- Bracket Visual -->
+        <div class="bracket-wrapper">
+            <div id="bracket" class="bracket">
+                <div style="padding: 2rem; color: var(--text-light);" data-i18n="msg_configure">Configura el torneo arriba.</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Control Zoom (ACTUALIZADO CON DISPLAY) -->
+    <div id="zoom-controls">
+        <small>Zoom: <span id="zoom-value">x1.0</span></small>
+        <input type="range" id="zoom-slider" min="0.5" max="1.5" step="0.1" value="1">
+    </div>
+
+    <!-- Modal de Resultados (DISEÑO ACTUALIZADO) -->
+    <div class="modal-overlay" id="result-modal">
+        <div class="modal">
+            <h2 data-i18n="modal_result">Ingresar Resultado</h2>
+            
+            <div class="modal-body-columns">
+                <!-- Columna Jugador 1 -->
+                <div class="player-column">
+                    <div class="player-name-display" id="modal-p1">Jugador 1</div>
+                    <input type="number" id="modal-score1" class="score-box" placeholder="0" min="0">
+                    <button id="modal-btn-w1" class="btn-winner-column" data-i18n="modal_win">Ganar</button>
+                </div>
+
+                <!-- Separador VS -->
+                <div class="vs-divider">VS</div>
+
+                <!-- Columna Jugador 2 -->
+                <div class="player-column">
+                    <div class="player-name-display" id="modal-p2">Jugador 2</div>
+                    <input type="number" id="modal-score2" class="score-box" placeholder="0" min="0">
+                    <button id="modal-btn-w2" class="btn-winner-column" data-i18n="modal_win">Ganar</button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="modal-btn-cancel" class="btn-cancel-full" data-i18n="modal_cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Configuración de Colores -->
+    <div class="modal-overlay" id="color-modal">
+        <div class="modal">
+            <h2 data-i18n="modal_colors">Colores del Podio</h2>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:1rem; text-align:center;" data-i18n="modal_colors_hint">Usa Hex (#FFD700), RGB o nombres (gold).</p>
+            
+            <div class="color-row">
+                <span class="color-label" data-i18n="color_1">1er Puesto (Oro)</span>
+                <div class="color-inputs">
+                    <input type="text" id="col-1-bg" value="#FFD700" data-i18n-placeholder="lbl_bg" placeholder="Fondo">
+                    <input type="text" id="col-1-txt" value="#000000" data-i18n-placeholder="lbl_txt" placeholder="Texto">
+                </div>
+            </div>
+
+            <div class="color-row">
+                <span class="color-label" data-i18n="color_2">2do Puesto (Plata)</span>
+                <div class="color-inputs">
+                    <input type="text" id="col-2-bg" value="#C0C0C0" data-i18n-placeholder="lbl_bg" placeholder="Fondo">
+                    <input type="text" id="col-2-txt" value="#000000" data-i18n-placeholder="lbl_txt" placeholder="Texto">
+                </div>
+            </div>
+
+            <div class="color-row">
+                <span class="color-label" data-i18n="color_3">3er Puesto (Bronce)</span>
+                <div class="color-inputs">
+                    <input type="text" id="col-3-bg" value="#CD7F32" data-i18n-placeholder="lbl_bg" placeholder="Fondo">
+                    <input type="text" id="col-3-txt" value="#FFFFFF" data-i18n-placeholder="lbl_txt" placeholder="Texto">
+                </div>
+            </div>
+
+                        <div class="color-row">
+                <span class="color-label" data-i18n="color_4">4to Puesto</span>
+                <div class="color-inputs">
+                    <input type="text" id="col-4-bg" value="#E2E8F0" data-i18n-placeholder="lbl_bg" placeholder="Fondo">
+                    <input type="text" id="col-4-txt" value="#000000" data-i18n-placeholder="lbl_txt" placeholder="Texto">
+                </div>
+            </div>
+
+            <!-- ✅ NUEVO: color global de TODOS los participantes (nombre + fondo) -->
+            <div class="color-row">
+                <span class="color-label" data-i18n="color_participant_name">Color de los Nombres</span>
+                <div class="color-inputs">
+                    <input type="text" id="col-participant-txt" value="#1E293B" data-i18n-placeholder="lbl_txt" placeholder="Texto">
+                </div>
+            </div>
+
+            <div class="color-row">
+                <span class="color-label" data-i18n="color_participant_bg">Fondo de los Participantes</span>
+                <div class="color-inputs">
+                    <input type="text" id="col-participant-bg" value="#FFFFFF" data-i18n-placeholder="lbl_bg" placeholder="Fondo">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel-full" id="btn-cancel-colors" data-i18n="modal_cancel">Cancelar</button>
+                <button class="btn-winner-column" id="btn-save-colors" data-i18n="modal_save" style="width: auto; padding: 0.6rem 2rem;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal de Exportar Imagen -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal">
+            <h2 data-i18n="modal_export">Exportar Bracket</h2>
+            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem; text-align:center;" data-i18n="modal_export_hint">Selecciona el formato de imagen</p>
+            
+            <div class="export-format-grid">
+                <button class="export-format-btn" data-format="png">
+                    <span class="format-icon">🖼️</span>
+                    <span class="format-name">PNG</span>
+                    <span class="format-desc" data-i18n="fmt_png_desc">Sin pérdida · Recomendado</span>
+                </button>
+                <button class="export-format-btn" data-format="jpeg">
+                    <span class="format-icon">📷</span>
+                    <span class="format-name">JPEG</span>
+                    <span class="format-desc" data-i18n="fmt_jpeg_desc">Comprimido · Archivo pequeño</span>
+                </button>
+                <button class="export-format-btn" data-format="webp">
+                    <span class="format-icon">🌐</span>
+                    <span class="format-name">WEBP</span>
+                    <span class="format-desc" data-i18n="fmt_webp_desc">Moderno · Eficiente</span>
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btn-cancel-export" class="btn-cancel-full" data-i18n="modal_cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Mensaje</div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // ===========================
+        // CONFIGURACIÓN DE IDIOMAS
+        // ===========================
+        let currentLang = 'es';
+
+        const translations = {
+            es: {
+                app_title: "🏆 Torneo Pro",
+                btn_save: "💾 Guardar",
+                btn_load: "📂 Importar",
+                btn_colors: "🎨 Colores",
+                label_3rd: "3er y 4to Puesto",
+                opt_4: "4 (Semis)",
+                opt_8: "8 (Cuartos)",
+                opt_16: "16 (Octavos)",
+                opt_32: "32 (Dieciseisavos)",
+                opt_64: "64 (Treintaidosavos)",
+                btn_create: "Crear Bracket",
+                btn_edit_participants: "✏️ Editar",
+                btn_reset: "Reiniciar",
+                setup_participants: "Participantes",
+                setup_hint: "Participantes: {count} / {total}", // Formato actualizado
+                setup_placeholder: "Juan Pérez\nMaría Gómez\n...",
+                btn_shuffle: "🔀 Mezclar",
+                btn_start: "Generar Sorteo e Iniciar",
+                msg_configure: "Configura el torneo arriba.",
+                msg_missing: "Faltan nombres: {total} requeridos, tienes {actual}",
+                msg_shuffle: "Lista mezclada",
+                msg_started: "¡Torneo Iniciado!",
+                msg_saved: "Torneo guardado correctamente",
+                msg_loaded: "Torneo importado exitosamente",
+                msg_error_file: "Error al leer el archivo",
+                msg_no_tournament: "No hay torneo activo para guardar",
+                msg_colors_updated: "Colores actualizados",
+                msg_3rd_enabled: "Partido 3er puesto activado",
+                msg_3rd_disabled: "Partido 3er puesto desactivado",
+                modal_result: "Ingresar Resultado",
+                modal_win: "Ganar",
+                modal_cancel: "Cancelar",
+                modal_colors: "Colores del Podio",
+                modal_colors_hint: "Usa Hex (#FFD700), RGB o nombres (gold).",
+                modal_save: "Guardar",
+                color_1: "1er Puesto (Oro)",
+                color_2: "2do Puesto (Plata)",
+                color_3: "3er Puesto (Bronce)",
+                color_4: "4to Puesto",
+                lbl_bg: "Fondo",
+                lbl_txt: "Texto",
+                lbl_player: "Jugador",
+                lbl_pending: "Pendiente...",
+                round_final: "Gran Final",
+                round_semi: "Semifinal",
+                round_quarter: "Cuartos de Final",
+                round_ro16: "Octavos de Final",
+                round_ro32: "Dieciseisavos",
+                round_ro64: "Treintaidosavos",
+                round_generic: "Ronda {n}",
+                third_place_label: "Tercer y Cuarto Puesto",
+                btn_export: "🖼️ Exportar",
+                modal_export: "Exportar Bracket",
+                modal_export_hint: "Selecciona el formato de imagen",
+                fmt_png_desc: "Sin pérdida · Recomendado",
+                fmt_jpeg_desc: "Comprimido · Archivo pequeño",
+                fmt_webp_desc: "Moderno · Eficiente",
+                msg_exporting: "Generando imagen...",
+                msg_exported: "Imagen exportada correctamente",
+                msg_export_error: "Error al exportar la imagen",
+                msg_no_export: "No hay bracket para exportar",
+                color_participant_name: "Color de los Nombres",
+                color_participant_bg: "Fondo de los Participantes"
+            },
+            en: {
+                app_title: "🏆 Tournament Pro",
+                btn_save: "💾 Save",
+                btn_load: "📂 Import",
+                btn_colors: "🎨 Colors",
+                label_3rd: "3rd & 4th Place",
+                opt_4: "4 (Semis)",
+                opt_8: "8 (Quarters)",
+                opt_16: "16 (Round of 16)",
+                opt_32: "32 (Round of 32)",
+                opt_64: "64 (Round of 64)",
+                btn_create: "Create Bracket",
+                btn_edit_participants: "✏️ Edit",
+                btn_reset: "Reset",
+                setup_participants: "Participants",
+                setup_hint: "Participants: {count} / {total}",
+                setup_placeholder: "John Doe\nJane Smith\n...",
+                btn_shuffle: "🔀 Shuffle",
+                btn_start: "Generate Draw & Start",
+                msg_configure: "Configure the tournament above.",
+                msg_missing: "Missing names: {total} required, have {actual}",
+                msg_shuffle: "List shuffled",
+                msg_started: "Tournament Started!",
+                msg_saved: "Tournament saved successfully",
+                msg_loaded: "Tournament imported successfully",
+                msg_error_file: "Error reading file",
+                msg_no_tournament: "No active tournament to save",
+                msg_colors_updated: "Colors updated",
+                msg_3rd_enabled: "3rd place match enabled",
+                msg_3rd_disabled: "3rd place match disabled",
+                modal_result: "Enter Result",
+                modal_win: "Win",
+                modal_cancel: "Cancel",
+                modal_colors: "Podium Colors",
+                modal_colors_hint: "Use Hex (#FFD700), RGB or names (gold).",
+                modal_save: "Save",
+                color_1: "1st Place (Gold)",
+                color_2: "2nd Place (Silver)",
+                color_3: "3rd Place (Bronze)",
+                color_4: "4th Place",
+                lbl_bg: "Bg",
+                lbl_txt: "Text",
+                lbl_player: "Player",
+                lbl_pending: "Pending...",
+                round_final: "Grand Final",
+                round_semi: "Semifinal",
+                round_quarter: "Quarter-Finals",
+                round_ro16: "Round of 16",
+                round_ro32: "Round of 32",
+                round_ro64: "Round of 64",
+                round_generic: "Round {n}",
+                third_place_label: "3rd Place Match",
+                btn_export: "🖼️ Export",
+                modal_export: "Export Bracket",
+                modal_export_hint: "Select image format",
+                fmt_png_desc: "Lossless · Recommended",
+                fmt_jpeg_desc: "Compressed · Small file",
+                fmt_webp_desc: "Modern · Efficient",
+                msg_exporting: "Generating image...",
+                msg_exported: "Image exported successfully",
+                msg_export_error: "Error exporting image",
+                msg_no_export: "No bracket to export",
+                color_participant_name: "Name Color",
+                color_participant_bg: "Participant Background"
+            },
+            zh: {
+                app_title: "🏆 职业锦标赛",
+                btn_save: "💾 保存",
+                btn_load: "📂 导入",
+                btn_colors: "🎨 颜色",
+                label_3rd: "季军战",
+                opt_4: "4 (半决赛)",
+                opt_8: "8 (四分之一决赛)",
+                opt_16: "16 (十六强)",
+                opt_32: "32 (三十二强)",
+                opt_64: "64 (六十四强)",
+                btn_create: "创建对阵表",
+                btn_edit_participants: "✏️ 编辑",
+                btn_reset: "重置",
+                setup_participants: "参与者",
+                setup_hint: "参与者: {count} / {total}",
+                setup_placeholder: "张三\n李四\n...",
+                btn_shuffle: "🔀 随机排序",
+                btn_start: "生成抽签并开始",
+                msg_configure: "请在上方配置锦标赛。",
+                msg_missing: "缺少名字: 需要 {total} 个，现有 {actual} 个",
+                msg_shuffle: "列表已打乱",
+                msg_started: "锦标赛已开始！",
+                msg_saved: "锦标赛保存成功",
+                msg_loaded: "锦标赛导入成功",
+                msg_error_file: "读取文件错误",
+                msg_no_tournament: "没有活动的锦标赛可保存",
+                msg_colors_updated: "颜色已更新",
+                msg_3rd_enabled: "季军战已启用",
+                msg_3rd_disabled: "季军战已禁用",
+                modal_result: "输入结果",
+                modal_win: "获胜",
+                modal_cancel: "取消",
+                modal_colors: "领奖台颜色",
+                modal_colors_hint: "使用十六进制 (#FFD700), RGB 或名称 (gold)。",
+                modal_save: "保存",
+                color_1: "第1名 (金牌)",
+                color_2: "第2名 (银牌)",
+                color_3: "第3名 (铜牌)",
+                color_4: "第4名",
+                lbl_bg: "背景",
+                lbl_txt: "文本",
+                lbl_player: "选手",
+                lbl_pending: "待定...",
+                round_final: "总决赛",
+                round_semi: "半决赛",
+                round_quarter: "四分之一决赛",
+                round_ro16: "十六强",
+                round_ro32: "三十二强",
+                round_ro64: "六十四强",
+                round_generic: "第 {n} 轮",
+                third_place_label: "季军争夺战",
+                btn_export: "🖼️ 导出",
+                modal_export: "导出对阵图",
+                modal_export_hint: "选择图片格式",
+                fmt_png_desc: "无损 · 推荐",
+                fmt_jpeg_desc: "压缩 · 文件小",
+                fmt_webp_desc: "现代 · 高效",
+                msg_exporting: "正在生成图片...",
+                msg_exported: "图片导出成功",
+                msg_export_error: "图片导出失败",
+                msg_no_export: "没有可导出的对阵图",
+                color_participant_name: "姓名颜色",
+                color_participant_bg: "参赛者背景"
+            },
+            ja: {
+                app_title: "🏆 プロトーナメント",
+                btn_save: "💾 保存",
+                btn_load: "📂 インポート",
+                btn_colors: "🎨 色",
+                label_3rd: "3位決定戦",
+                opt_4: "4 (準決勝)",
+                opt_8: "8 (準々決勝)",
+                opt_16: "16 (ベスト16)",
+                opt_32: "32 (ベスト32)",
+                opt_64: "64 (ベスト64)",
+                btn_create: "ブラケット作成",
+                btn_edit_participants: "✏️ 編集",
+                btn_reset: "リセット",
+                setup_participants: "参加者",
+                setup_hint: "参加者: {count} / {total}",
+                setup_placeholder: "山田 太郎\n鈴木 一郎\n...",
+                btn_shuffle: "🔀 シャッフル",
+                btn_start: "抽選を生成して開始",
+                msg_configure: "上部でトーナメントを設定してください。",
+                msg_missing: "名前が不足しています: {total}必要ですが、{actual}しかありません",
+                msg_shuffle: "リストをシャッフルしました",
+                msg_started: "トーナメント開始！",
+                msg_saved: "トーナメントを保存しました",
+                msg_loaded: "トーナメントをインポートしました",
+                msg_error_file: "ファイル読み込みエラー",
+                msg_no_tournament: "保存中のアクティブなトーナメントはありません",
+                msg_colors_updated: "色を更新しました",
+                msg_3rd_enabled: "3位決定戦が有効になりました",
+                msg_3rd_disabled: "3位決定戦が無効になりました",
+                modal_result: "結果入力",
+                modal_win: "勝利",
+                modal_cancel: "キャンセル",
+                modal_colors: "表彰台の色",
+                modal_colors_hint: "Hex (#FFD700), RGB または名前 (gold) を使用。",
+                modal_save: "保存",
+                color_1: "1位 (金)",
+                color_2: "2位 (銀)",
+                color_3: "3位 (銅)",
+                color_4: "4位",
+                lbl_bg: "背景",
+                lbl_txt: "テキスト",
+                lbl_player: "プレイヤー",
+                lbl_pending: "保留中...",
+                round_final: "決勝",
+                round_semi: "準決勝",
+                round_quarter: "準々決勝",
+                round_ro16: "ベスト16",
+                round_ro32: "ベスト32",
+                round_ro64: "ベスト64",
+                round_generic: "第 {n} ラウンド",
+                third_place_label: "3位決定戦",
+                btn_export: "🖼️ エクスポート",
+                modal_export: "ブラケットをエクスポート",
+                modal_export_hint: "画像形式を選択",
+                fmt_png_desc: "可逆 · 推奨",
+                fmt_jpeg_desc: "圧縮 · 小さいファイル",
+                fmt_webp_desc: "モダン · 効率的",
+                msg_exporting: "画像を生成中...",
+                msg_exported: "画像をエクスポートしました",
+                msg_export_error: "画像のエクスポートに失敗しました",
+                msg_no_export: "エクスポートするブラケットがありません",
+                color_participant_name: "名前の色",
+                color_participant_bg: "参加者の背景"
+            },
+            ko: {
+                app_title: "🏆 프로 토너먼트",
+                btn_save: "💾 저장",
+                btn_load: "📂 가져오기",
+                btn_colors: "🎨 색상",
+                label_3rd: "3, 4위전",
+                opt_4: "4 (준결승)",
+                opt_8: "8 (8강)",
+                opt_16: "16 (16강)",
+                opt_32: "32 (32강)",
+                opt_64: "64 (64강)",
+                btn_create: "브래킷 생성",
+                btn_edit_participants: "✏️ 편집",
+                btn_reset: "초기화",
+                setup_participants: "참가자",
+                setup_hint: "참가자: {count} / {total}",
+                setup_placeholder: "홍길동\n김철수\n...",
+                btn_shuffle: "🔀 섞기",
+                btn_start: "추첨 생성 및 시작",
+                msg_configure: "상단에서 토너먼트를 설정하세요.",
+                msg_missing: "이름 부족: {total}명 필요, 현재 {actual}명",
+                msg_shuffle: "목록이 섞였습니다",
+                msg_started: "토너먼트 시작!",
+                msg_saved: "토너먼트가 저장되었습니다",
+                msg_loaded: "토너먼트를 불러왔습니다",
+                msg_error_file: "파일 읽기 오류",
+                msg_no_tournament: "저장할 활성 토너먼트가 없습니다",
+                msg_colors_updated: "색상이 업데이트되었습니다",
+                msg_3rd_enabled: "3, 4위전 활성화됨",
+                msg_3rd_disabled: "3, 4위전 비활성화됨",
+                modal_result: "결과 입력",
+                modal_win: "승리",
+                modal_cancel: "취소",
+                modal_colors: "시상대 색상",
+                modal_colors_hint: "Hex (#FFD700), RGB 또는 이름 (gold)을 사용하세요.",
+                modal_save: "저장",
+                color_1: "1위 (금)",
+                color_2: "2위 (은)",
+                color_3: "3위 (동)",
+                color_4: "4위",
+                lbl_bg: "배경",
+                lbl_txt: "텍스트",
+                lbl_player: "플레이어",
+                lbl_pending: "대기 중...",
+                round_final: "결승전",
+                round_semi: "준결승",
+                round_quarter: "8강",
+                round_ro16: "16강",
+                round_ro32: "32강",
+                round_ro64: "64강",
+                round_generic: "{n}라운드",
+                third_place_label: "3, 4위전",
+                btn_export: "🖼️ 내보내기",
+                modal_export: "대진표 내보내기",
+                modal_export_hint: "이미지 형식을 선택하세요",
+                fmt_png_desc: "무손실 · 추천",
+                fmt_jpeg_desc: "압축 · 작은 파일",
+                fmt_webp_desc: "최신 · 효율적",
+                msg_exporting: "이미지 생성 중...",
+                msg_exported: "이미지 내보내기 완료",
+                msg_export_error: "이미지 내보내기 실패",
+                msg_no_export: "내보낼 대진표가 없습니다",
+                color_participant_name: "이름 색상",
+                color_participant_bg: "참가자 배경"
+            }
+        };
+
+        function t(key, replacements = {}) {
+            let text = translations[currentLang][key] || translations['es'][key] || key;
+            for (const [k, v] of Object.entries(replacements)) {
+                text = text.replace(`{${k}}`, v);
+            }
+            return text;
+        }
+
+        function updateLanguageUI(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = t(key);
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                el.placeholder = t(key);
+            });
+
+            const participantsSelect = document.getElementById('participants');
+            Array.from(participantsSelect.options).forEach(opt => {
+                if(opt.hasAttribute('data-i18n')) {
+                    opt.text = t(opt.getAttribute('data-i18n'));
+                }
+            });
+
+            if (tournamentData.rounds.length > 0) {
+                renderBracket();
+            }
+            
+            if(els.setupArea.classList.contains('active')) {
+                 updateParticipantCountHint();
+            }
+        }
+
+        // --- Referencias DOM ---
+        const els = {
+            select: document.getElementById('participants'),
+            btnCreate: document.getElementById('btn-create'),
+            btnEditParticipants: document.getElementById('btn-edit-participants'),
+            btnReset: document.getElementById('btn-reset'),
+            btnSave: document.getElementById('btn-save'),
+            btnLoad: document.getElementById('btn-load'),
+            fileInput: document.getElementById('file-input'),
+            btnShuffle: document.getElementById('btn-shuffle'),
+            btnStart: document.getElementById('btn-start-tournament'),
+            btnColors: document.getElementById('btn-colors'),
+            setupArea: document.getElementById('setup-area'),
+            namesInput: document.getElementById('names-input'),
+            hint: document.getElementById('participants-count-hint'),
+            bracket: document.getElementById('bracket'),
+            thirdPlaceToggle: document.getElementById('third-place-toggle'),
+            toast: document.getElementById('toast'),
+            zoomControls: document.getElementById('zoom-controls'),
+            zoomSlider: document.getElementById('zoom-slider'),
+            zoomValue: document.getElementById('zoom-value'),
+            
+            modal: document.getElementById('result-modal'),
+            modalP1: document.getElementById('modal-p1'),
+            modalP2: document.getElementById('modal-p2'),
+            modalScore1: document.getElementById('modal-score1'),
+            modalScore2: document.getElementById('modal-score2'),
+            btnCancel: document.getElementById('modal-btn-cancel'),
+            btnW1: document.getElementById('modal-btn-w1'),
+            btnW2: document.getElementById('modal-btn-w2'),
+
+                        btnExport: document.getElementById('btn-export'),
+            exportModal: document.getElementById('export-modal'),
+            btnCancelExport: document.getElementById('btn-cancel-export'),
+
+            colorModal: document.getElementById('color-modal'),
+            btnCancelColors: document.getElementById('btn-cancel-colors'),
+            btnSaveColors: document.getElementById('btn-save-colors'),
+            colInputs: {
+                c1: { bg: document.getElementById('col-1-bg'), txt: document.getElementById('col-1-txt') },
+                c2: { bg: document.getElementById('col-2-bg'), txt: document.getElementById('col-2-txt') },
+                c3: { bg: document.getElementById('col-3-bg'), txt: document.getElementById('col-3-txt') },
+                c4: { bg: document.getElementById('col-4-bg'), txt: document.getElementById('col-4-txt') },
+                participant: {
+                    txt: document.getElementById('col-participant-txt'),
+                    bg:  document.getElementById('col-participant-bg')
+                }
+            }
+        };
+
+        let tournamentData = {
+            totalParticipants: 0,
+            enableThirdPlace: false,
+            rounds: [],
+            thirdPlaceMatch: {
+                id: 'tp-final',
+                p1: null,
+                p2: null,
+                s1: null,
+                s2: null,
+                winner: null
+            }
+        };
+
+        let colorSettings = {
+            p1: { bg: '#FFD700', txt: '#000000' },
+            p2: { bg: '#C0C0C0', txt: '#000000' },
+            p3: { bg: '#CD7F32', txt: '#FFFFFF' },
+            p4: { bg: '#E2E8F0', txt: '#000000' },
+            // ✅ Color global de TODOS los participantes (nombre + fondo)
+            participant: { bg: '#FFFFFF', txt: '#1E293B' }
+        };
+
+        // ✅ Mapa de medallistas actual (se recalcula en cada renderBracket)
+        //    Formato: { "NombreJugador": 1|2|3|4 }
+        let currentMedalists = {};
+
+        let currentEditingMatch = null; 
+
+        // ✅ NUEVO: modo edición. Si está activo y no cambia el tamaño,
+        //    se preservan resultados, medallas, colores y 3er puesto.
+        let isEditingMode = false;
+
+        // --- Eventos Iniciales ---
+        els.btnCreate.addEventListener('click', () => {
+            isEditingMode = false; // ✅ Crear = torneo nuevo → no preservar
+            updateParticipantCountHint();
+            els.setupArea.classList.add('active');
+            els.namesInput.value = "";
+            els.namesInput.focus();
+            els.bracket.innerHTML = `<div style="padding:2rem">${t('msg_configure')}</div>`;
+            els.zoomControls.classList.remove('active');
+        });
+
+        // ✅ NUEVO: Editar participantes reutilizando el espacio del setup
+        els.btnEditParticipants.addEventListener('click', () => {
+            if (tournamentData.rounds.length === 0) {
+                return showToast(t('msg_no_tournament'), 'error');
+            }
+
+            // Recuperar los nombres actuales desde la primera ronda
+            const names = [];
+            tournamentData.rounds[0].forEach(m => {
+                if (m.p1 && m.p1 !== 'BYE') names.push(m.p1);
+                if (m.p2 && m.p2 !== 'BYE') names.push(m.p2);
+            });
+
+            // Rellenar el textarea con los participantes actuales
+            els.namesInput.value = names.join('\n');
+
+            // Sincronizar el selector de cantidad con el tamaño actual del bracket
+            const total = tournamentData.totalParticipants;
+            if ([4, 8, 16, 32, 64].includes(total)) {
+                els.select.value = String(total);
+            }
+
+            // Refrescar el contador (si el usuario agrega más nombres,
+            // el hint se pone en rojo y puede subir el tamaño con el dropdown).
+            updateParticipantCountHint();
+
+            // ✅ Activar modo edición → al pulsar "Generar Sorteo e Iniciar"
+            //    se preservarán resultados, colores y 3er puesto si el
+            //    tamaño de participantes no cambia.
+            isEditingMode = true;
+
+            // Mostrar el mismo espacio blanco de configuración
+            els.setupArea.classList.add('active');
+            els.namesInput.focus();
+            els.setupArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        els.btnReset.addEventListener('click', () => location.reload());
+
+        els.btnSave.addEventListener('click', () => {
+            if (tournamentData.rounds.length === 0) return showToast(t('msg_no_tournament'), "error");
+            
+            const dataToSave = {
+                tournament: tournamentData,
+                colors: colorSettings,
+                timestamp: new Date().toISOString()
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "torneo_progreso.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            showToast(t('msg_saved'), "success");
+        });
+
+        els.btnLoad.addEventListener('click', () => {
+            els.fileInput.click();
+        });
+
+        els.fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const parsedData = JSON.parse(event.target.result);
+                    
+                    if (parsedData.tournament && parsedData.tournament.thirdPlaceMatch) {
+                        const tp = parsedData.tournament.thirdPlaceMatch;
+                        if (tp.player1 !== undefined && tp.p1 === undefined) {
+                            tp.p1 = tp.player1;
+                            tp.p2 = tp.player2;
+                            tp.s1 = tp.score1;
+                            tp.s2 = tp.score2;
+                        }
+                    }
+
+                    if (!parsedData.tournament || !parsedData.colors) {
+                        throw new Error("Formato de archivo inválido");
+                    }
+
+                    tournamentData = parsedData.tournament;
+                    colorSettings = parsedData.colors;
+                    
+                    // ✅ Compatibilidad: archivos viejos no tienen "participant"
+                    if (!colorSettings.participant) {
+                        colorSettings.participant = { bg: '#FFFFFF', txt: '#1E293B' };
+                    }
+                    
+                    // CORRECCIÓN: Sincronizar el checkbox con el archivo cargado
+                    els.thirdPlaceToggle.checked = tournamentData.enableThirdPlace;
+
+                    els.setupArea.classList.remove('active');
+                    els.zoomControls.classList.add('active');
+                    renderBracket();
+                    showToast(t('msg_loaded'), "success");
+                } catch (err) {
+                    showToast(t('msg_error_file'), "error");
+                    console.error(err);
+                }
+                els.fileInput.value = '';
+            };
+            reader.readAsText(file);
+        });
+
+        els.btnShuffle.addEventListener('click', () => {
+            const names = parseNames(els.namesInput.value);
+            if (names.length < 2) return showToast(t('msg_missing', {total: 2, actual: names.length}), "error");
+            for (let i = names.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [names[i], names[j]] = [names[j], names[i]];
+            }
+            els.namesInput.value = names.join('\n');
+            updateParticipantCountHint(); // Actualizar contador al mezclar
+            showToast(t('msg_shuffle'), "success");
+        });
+
+        els.btnStart.addEventListener('click', () => {
+            const total = parseInt(els.select.value);
+            const names = parseNames(els.namesInput.value);
+            tournamentData.enableThirdPlace = els.thirdPlaceToggle.checked;
+
+            if (names.length !== total) {
+                showToast(t('msg_missing', {total: total, actual: names.length}), 'error');
+                return;
+            }
+
+            // ✅ NUEVO: si venimos de "Editar" y NO cambió el tamaño,
+            //    preservamos TODO (resultados, medallas, colores, 3er puesto)
+            //    y solo remapeamos los nombres por posición en el textarea.
+            const canPreserve = isEditingMode
+                             && tournamentData.rounds.length > 0
+                             && total === tournamentData.totalParticipants;
+
+            if (canPreserve) {
+                // 1) Nombres actuales en el bracket (en orden de aparición)
+                const oldNames = [];
+                tournamentData.rounds[0].forEach(m => {
+                    if (m.p1 && m.p1 !== 'BYE') oldNames.push(m.p1);
+                    if (m.p2 && m.p2 !== 'BYE') oldNames.push(m.p2);
+                });
+
+                // 2) Mapa oldName → newName (por posición, sin duplicados)
+                const renameMap = {};
+                for (let i = 0; i < Math.min(oldNames.length, names.length); i++) {
+                    if (oldNames[i] !== names[i]) renameMap[oldNames[i]] = names[i];
+                }
+
+                // 3) Aplicar renombrado a TODOS los partidos de TODAS las rondas
+                const rename = (n) => (n && renameMap[n]) ? renameMap[n] : n;
+                tournamentData.rounds.forEach(round => {
+                    round.forEach(m => {
+                        m.p1 = rename(m.p1);
+                        m.p2 = rename(m.p2);
+                        m.winner = rename(m.winner);
+                    });
+                });
+
+                // 4) Aplicar renombrado también al partido de 3er/4to puesto
+                const tp = tournamentData.thirdPlaceMatch;
+                if (tp) {
+                    tp.p1 = rename(tp.p1);
+                    tp.p2 = rename(tp.p2);
+                    tp.winner = rename(tp.winner);
+                }
+
+                // 5) Re-render (los medallistas se recalculan solos y
+                //    los colores del podio siguen aplicándose igual)
+                renderBracket();
+                els.setupArea.classList.remove('active');
+                els.zoomControls.classList.add('active');
+                isEditingMode = false;
+                showToast(t('msg_started'), "success");
+                return;
+            }
+
+            // Flujo original (torneo nuevo, o cambio de tamaño: 16→32, etc.)
+            generateBracketData(total, names);
+            renderBracket();
+            els.setupArea.classList.remove('active');
+            els.zoomControls.classList.add('active');
+            
+            tournamentData.thirdPlaceMatch = { 
+                id: 'tp-final', 
+                p1: null, 
+                p2: null, 
+                s1: null, 
+                s2: null, 
+                winner: null 
+            };
+            isEditingMode = false; // ✅ Consumir la bandera
+            showToast(t('msg_started'), "success");
+        });
+
+        // --- ACTUALIZACIÓN ZOOM DISPLAY ---
+        els.zoomSlider.addEventListener('input', (e) => {
+    const val = e.target.value;
+    els.bracket.style.zoom = val;
+    els.zoomValue.textContent = `x${parseFloat(val).toFixed(1)}`;
+    requestAnimationFrame(drawBracketLines); // ✅ NUEVO
+});
+
+        els.btnColors.addEventListener('click', () => {
+            updateColorInputs();
+            els.colorModal.classList.add('open');
+        });
+
+        els.btnCancelColors.addEventListener('click', () => {
+            els.colorModal.classList.remove('open');
+        });
+
+        els.btnSaveColors.addEventListener('click', () => {
+            colorSettings.p1 = { bg: els.colInputs.c1.bg.value, txt: els.colInputs.c1.txt.value };
+            colorSettings.p2 = { bg: els.colInputs.c2.bg.value, txt: els.colInputs.c2.txt.value };
+            colorSettings.p3 = { bg: els.colInputs.c3.bg.value, txt: els.colInputs.c3.txt.value };
+            colorSettings.p4 = { bg: els.colInputs.c4.bg.value, txt: els.colInputs.c4.txt.value };
+            // ✅ Participantes (global) — aplicar a TODOS los jugadores
+            //    Si por alguna razón el input no existiera, conservamos el valor anterior.
+            const pIn = els.colInputs.participant || {};
+            colorSettings.participant = {
+                bg:  pIn.bg  ? pIn.bg.value  : (colorSettings.participant?.bg  || '#FFFFFF'),
+                txt: pIn.txt ? pIn.txt.value : (colorSettings.participant?.txt || '#1E293B')
+            };
+            
+            els.colorModal.classList.remove('open');
+            renderBracket();
+            showToast(t('msg_colors_updated'), "success");
+        });
+
+        function updateColorInputs() {
+            // ✅ Guard defensivo: si algún input no existe en el DOM, no rompemos
+            //    la apertura del modal (evita el TypeError silencioso).
+            const safeSet = (el, val) => { if (el) el.value = val; };
+
+            safeSet(els.colInputs.c1.bg,  colorSettings.p1.bg);
+            safeSet(els.colInputs.c1.txt, colorSettings.p1.txt);
+            safeSet(els.colInputs.c2.bg,  colorSettings.p2.bg);
+            safeSet(els.colInputs.c2.txt, colorSettings.p2.txt);
+            safeSet(els.colInputs.c3.bg,  colorSettings.p3.bg);
+            safeSet(els.colInputs.c3.txt, colorSettings.p3.txt);
+            safeSet(els.colInputs.c4.bg,  colorSettings.p4.bg);
+            safeSet(els.colInputs.c4.txt, colorSettings.p4.txt);
+
+            // ✅ Participantes (global)
+            const p = colorSettings.participant || { bg: '#FFFFFF', txt: '#1E293B' };
+            safeSet(els.colInputs.participant && els.colInputs.participant.bg,  p.bg);
+            safeSet(els.colInputs.participant && els.colInputs.participant.txt, p.txt);
+        }
+
+        function parseNames(str) {
+            return str.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+        }
+
+        function showToast(msg, type = 'info') {
+            els.toast.textContent = msg;
+            els.toast.className = `show ${type}`;
+            setTimeout(() => els.toast.classList.remove('show'), 3000);
+        }
+
+        // --- ACTUALIZACIÓN DE CONTADOR DE PARTICIPANTES ---
+        function updateParticipantCountHint() {
+            const currentNames = parseNames(els.namesInput.value);
+            const count = currentNames.length;
+            const total = parseInt(els.select.value);
+            
+            // Usa la clave de traducción setup_hint con formato: "Participantes: 2 / 16"
+            els.hint.textContent = t('setup_hint', {count: count, total: total});
+            
+            // Efecto visual si está completo
+            if (count === total && count > 0) {
+                els.hint.style.color = 'var(--success)';
+                els.hint.style.fontWeight = 'bold';
+            } else if (count > total) {
+                els.hint.style.color = 'var(--danger)';
+                els.hint.style.fontWeight = 'bold';
+            } else {
+                els.hint.style.color = 'var(--text-light)';
+                els.hint.style.fontWeight = 'normal';
+            }
+        }
+
+        // Listener para actualizar mientras se escribe
+        els.namesInput.addEventListener('input', updateParticipantCountHint);
+        
+        // Listener para actualizar si cambia el dropdown
+        els.select.addEventListener('change', () => {
+             if(els.setupArea.classList.contains('active')) {
+                 updateParticipantCountHint();
+             }
+        });
+
+        // --- Logic Localized ---
+        function getRoundName(total, rIndex, totalRounds) {
+            const isFinal = rIndex === totalRounds - 1;
+            const isSemi = rIndex === totalRounds - 2;
+            if (isFinal) return t('round_final');
+            if (isSemi) return t('round_semi');
+            if (total / Math.pow(2, rIndex) === 8) return t('round_quarter');
+            if (total / Math.pow(2, rIndex) === 16) return t('round_ro16');
+            if (total / Math.pow(2, rIndex) === 32) return t('round_ro32');
+            if (total / Math.pow(2, rIndex) === 64) return t('round_ro64');
+            return t('round_generic', {n: rIdx + 1});
+        }
+
+        function generateBracketData(total, names) {
+            tournamentData.totalParticipants = total;
+            const totalRounds = Math.log2(total);
+            tournamentData.rounds = [];
+            let nameIdx = 0;
+
+            const round1 = [];
+            for (let i = 0; i < total / 2; i++) {
+                round1.push({
+                    id: `r1-m${i}`,
+                    p1: names[nameIdx++] || "BYE",
+                    p2: names[nameIdx++] || "BYE",
+                    s1: null, s2: null, winner: null
+                });
+            }
+            tournamentData.rounds.push(round1);
+
+            let prevMatches = total / 2;
+            for (let r = 1; r < totalRounds; r++) {
+                const currRound = [];
+                for (let i = 0; i < prevMatches / 2; i++) {
+                    currRound.push({
+                        id: `r${r+1}-m${i}`,
+                        p1: null, p2: null,
+                        s1: null, s2: null, winner: null,
+                        prev1: tournamentData.rounds[r-1][i*2].id,
+                        prev2: tournamentData.rounds[r-1][i*2+1].id
+                    });
+                }
+                tournamentData.rounds.push(currRound);
+                prevMatches /= 2;
+            }
+        }
+
+        // --- CORRECCIÓN: Toggle dinámico del 3er Puesto ---
+        els.thirdPlaceToggle.addEventListener('change', () => {
+            if (tournamentData.rounds.length === 0) return;
+            tournamentData.enableThirdPlace = els.thirdPlaceToggle.checked;
+
+            if (tournamentData.enableThirdPlace) {
+                checkAndPopulateThirdPlace();
+                showToast(t('msg_3rd_enabled'), 'success');
+            } else {
+                showToast(t('msg_3rd_disabled'), 'info');
+            }
+            renderBracket();
+        });
+
+        function checkAndPopulateThirdPlace() {
+            const totalRounds = tournamentData.rounds.length;
+            if (totalRounds < 2) return;
+
+            const semiRoundIndex = totalRounds - 2;
+            const semiMatches = tournamentData.rounds[semiRoundIndex];
+
+            if (semiMatches.length >= 2) {
+                const m1 = semiMatches[0];
+                if (m1.winner) {
+                    tournamentData.thirdPlaceMatch.p1 = (m1.winner === m1.p1) ? m1.p2 : m1.p1;
+                } else {
+                    tournamentData.thirdPlaceMatch.p1 = null;
+                }
+
+                const m2 = semiMatches[1];
+                if (m2.winner) {
+                    tournamentData.thirdPlaceMatch.p2 = (m2.winner === m2.p2) ? m2.p2 : m2.p1;
+                } else {
+                    tournamentData.thirdPlaceMatch.p2 = null;
+                }
+            }
+        }
+
+        // ============================================================
+        // MEDALLISTAS: quién es 1º, 2º, 3º y 4º puesto
+        // (para pintar TODOS sus partidos con el color del podio)
+        // ============================================================
+        function getMedalistsMap() {
+            const medalists = {};
+            const totalRounds = tournamentData.rounds.length;
+            if (totalRounds < 1) return medalists;
+
+            // 🥇 1º y 🥈 2º → se determinan cuando la FINAL tiene ganador
+            const finalMatch = tournamentData.rounds[totalRounds - 1][0];
+            if (finalMatch && finalMatch.winner) {
+                medalists[finalMatch.winner] = 1;
+                const loser = (finalMatch.winner === finalMatch.p1) ? finalMatch.p2 : finalMatch.p1;
+                if (loser) medalists[loser] = 2;
+            }
+
+            // 🥉 3º y 4º → se determinan cuando el partido de 3er puesto tiene ganador
+            if (tournamentData.enableThirdPlace) {
+                const tp = tournamentData.thirdPlaceMatch;
+                if (tp && tp.winner) {
+                    medalists[tp.winner] = 3;
+                    const loser = (tp.winner === tp.p1) ? tp.p2 : tp.p1;
+                    if (loser) medalists[loser] = 4;
+                }
+            }
+
+            return medalists;
+        }
+
+        // Devuelve el par {bg, txt} a aplicar a la fila de un jugador concreto.
+        // Prioridad: podio (1/2/3/4) > participante global.
+        function getTeamColors(playerName) {
+            if (!playerName) return null; // slot vacío → sin color inline
+            const rank = currentMedalists[playerName];
+            if (rank === 1) return colorSettings.p1;
+            if (rank === 2) return colorSettings.p2;
+            if (rank === 3) return colorSettings.p3;
+            if (rank === 4) return colorSettings.p4;
+            return colorSettings.participant || { bg: '#FFFFFF', txt: '#1E293B' };
+        }
+
+        function renderBracket() {
+            els.bracket.innerHTML = '';
+            const totalRounds = tournamentData.rounds.length;
+
+            // ✅ Recalcular medallistas ANTES de construir las tarjetas
+            currentMedalists = getMedalistsMap();
+
+            tournamentData.rounds.forEach((round, rIdx) => {
+                const rDiv = document.createElement('div');
+                rDiv.className = 'round';
+                
+                const title = document.createElement('div');
+                title.className = 'round-title';
+                title.textContent = getRoundName(tournamentData.totalParticipants, rIdx, totalRounds);
+                rDiv.appendChild(title);
+                
+                round.forEach(match => {
+                    const isThisFinal = (rIdx === totalRounds - 1);
+                    const finalMatchClass = (isThisFinal && tournamentData.enableThirdPlace) ? 'final-match' : '';
+                    rDiv.appendChild(createMatchElement(match, rIdx, isThisFinal, false, finalMatchClass));
+                });
+
+                                if (rIdx === totalRounds - 1 && tournamentData.enableThirdPlace) {
+                    // ✅ Marcar este round como "final-round" para que CSS lo centre
+                    rDiv.classList.add('final-round');
+
+                    // ✅ Envolver separator + 3er puesto en un wrapper posicionado
+                    //    absolutamente → la final queda centrada y las líneas SVG
+                    //    de las semifinales no se desalinean.
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'third-wrapper';
+
+                    const sep = document.createElement('div');
+                    sep.className = 'third-place-separator';
+                    sep.textContent = t('third_place_label');
+                    wrapper.appendChild(sep);
+
+                    const tpMatchElement = renderThirdPlaceMatchElement();
+                    wrapper.appendChild(tpMatchElement);
+
+                    rDiv.appendChild(wrapper);
+                }
+
+                els.bracket.appendChild(rDiv);
+            });
+
+            // ✅ NUEVO: dibujar ramas tras renderizar
+    requestAnimationFrame(drawBracketLines);
+        }
+
+        // ============================================================
+// DIBUJO DE RAMAS DEL ÁRBOL (adaptado de Module:RoundN de Wikipedia)
+// ============================================================
+function drawBracketLines() {
+    const oldSvg = document.getElementById('bracket-svg');
+    if (oldSvg) oldSvg.remove();
+
+    if (!tournamentData.rounds || tournamentData.rounds.length < 2) return;
+
+    const bracket = els.bracket;
+    const zoom = parseFloat(els.zoomSlider.value) || 1;
+    const bracketRect = bracket.getBoundingClientRect();
+    const W = bracket.offsetWidth;
+    const H = bracket.offsetHeight;
+    if (!W || !H) return;
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.id = 'bracket-svg';
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    const lx = x => (x - bracketRect.left) / zoom;
+    const ly = y => (y - bracketRect.top) / zoom;
+
+    tournamentData.rounds.forEach((round, rIdx) => {
+        if (rIdx >= tournamentData.rounds.length - 1) return;
+        const nextRound = tournamentData.rounds[rIdx + 1];
+
+        for (let i = 0; i < round.length; i += 2) {
+            const mA = round[i];
+            const mB = round[i + 1];
+            const next = nextRound[Math.floor(i / 2)];
+            if (!next) continue;
+
+            const elA = bracket.querySelector(`[data-id="${mA.id}"]`);
+            const elNext = bracket.querySelector(`[data-id="${next.id}"]`);
+            if (!elA || !elNext) continue;
+
+            const rA = elA.getBoundingClientRect();
+            const rN = elNext.getBoundingClientRect();
+
+            const xRightA = lx(rA.right);
+            const yA = ly(rA.top + rA.height / 2);
+            const xNext = lx(rN.left);
+            const yNext = ly(rN.top + rN.height / 2);
+            const midX = (xRightA + xNext) / 2;
+
+            let d;
+            if (mB) {
+                const elB = bracket.querySelector(`[data-id="${mB.id}"]`);
+                if (!elB) continue;
+                const rB = elB.getBoundingClientRect();
+                const xRightB = lx(rB.right);
+                const yB = ly(rB.top + rB.height / 2);
+
+                // ✅ La vertical DEBE cubrir yA, yB e yNext → usa min/max
+                const yTop = Math.min(yA, yB, yNext);
+                const yBot = Math.max(yA, yB, yNext);
+
+                d = `M ${xRightA} ${yA} H ${midX}` +        // horizontal desde mA
+                    ` M ${xRightB} ${yB} H ${midX}` +        // horizontal desde mB
+                    ` M ${midX} ${yTop} V ${yBot}` +         // vertical unificada
+                    ` M ${midX} ${yNext} H ${xNext}`;        // horizontal hacia el siguiente
+            } else {
+                // Un solo partido alimenta la siguiente ronda: forma en L
+                d = `M ${xRightA} ${yA} H ${midX} V ${yNext} H ${xNext}`;
+            }
+
+            const path = document.createElementNS(NS, 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('stroke', '#000000');
+            path.setAttribute('stroke-width', '2');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(path);
+        }
+    });
+
+    bracket.appendChild(svg);
+}
+
+        function getScoreColorClass(score1, score2, myScore) {
+            const s1 = parseInt(score1);
+            const s2 = parseInt(score2);
+            const ms = parseInt(myScore);
+
+            if (isNaN(s1) || isNaN(s2) || isNaN(ms)) return '';
+            if (s1 === s2) return '';
+
+            if (s1 > s2) {
+                if (ms === s1) return 'score-green';
+                if (ms === s2) return 'score-red';
+            } else if (s2 > s1) {
+                if (ms === s1) return 'score-red';
+                if (ms === s2) return 'score-green';
+            }
+            return '';
+        }
+
+        function createMatchElement(match, rIdx, isFinal, isThirdPlace, extraClass = '') {
+            const div = document.createElement('div');
+            const isPlayable = match.p1 && match.p2;
+            div.className = `match ${match.winner ? 'finished' : ''} ${isPlayable ? 'playable' : ''} ${extraClass}`;
+            div.dataset.id = match.id;
+
+            if (isPlayable) {
+                div.onclick = () => openModal(match.id);
+            }
+
+            const score1Class = getScoreColorClass(match.s1, match.s2, match.s1);
+            const score2Class = getScoreColorClass(match.s1, match.s2, match.s2);
+
+            // ✅ Color por medallista (si aplica) o participante global.
+            //    Si el slot está vacío (sin nombre), no ponemos inline style.
+            const c1 = getTeamColors(match.p1);
+            const c2 = getTeamColors(match.p2);
+            const style1 = c1 ? `background-color:${c1.bg}; color:${c1.txt};` : '';
+            const style2 = c2 ? `background-color:${c2.bg}; color:${c2.txt};` : '';
+
+            div.innerHTML = `
+                <div class="team ${match.winner === match.p1 ? 'winner' : ''} ${!match.winner && match.s1 !== null ? 'loser' : ''}" style="${style1}">
+                    <span class="team-name">${match.p1 || '...'}</span>
+                    <span class="team-score ${score1Class}">${match.s1 !== null ? match.s1 : '-'}</span>
+                </div>
+                <div class="team ${match.winner === match.p2 ? 'winner' : ''} ${!match.winner && match.s2 !== null ? 'loser' : ''}" style="${style2}">
+                    <span class="team-name">${match.p2 || '...'}</span>
+                    <span class="team-score ${score2Class}">${match.s2 !== null ? match.s2 : '-'}</span>
+                </div>
+            `;
+            return div;
+        }
+
+        function renderThirdPlaceMatchElement() {
+            const m = tournamentData.thirdPlaceMatch;
+            const div = document.createElement('div');
+            const isPlayable = m.p1 && m.p2;
+
+            div.className = `match third-place ${m.winner ? 'finished' : ''} ${isPlayable ? 'playable' : ''}`;
+            div.dataset.id = m.id;
+
+            if (isPlayable) {
+                div.onclick = () => openModal(m.id);
+            }
+
+            const score1Class = getScoreColorClass(m.s1, m.s2, m.s1);
+            const score2Class = getScoreColorClass(m.s1, m.s2, m.s2);
+
+            // ✅ Misma lógica que createMatchElement: los jugadores del
+            //    partido por el 3er puesto ya están en currentMedalists
+            //    (ganador = 3º, perdedor = 4º) en cuanto se juega.
+            const c1 = getTeamColors(m.p1);
+            const c2 = getTeamColors(m.p2);
+            const style1 = c1 ? `background-color:${c1.bg}; color:${c1.txt};` : '';
+            const style2 = c2 ? `background-color:${c2.bg}; color:${c2.txt};` : '';
+
+            div.innerHTML = `
+                <div class="team ${m.winner === m.p1 ? 'winner' : ''}" style="${style1}">
+                    <span class="team-name">${m.p1 || t('lbl_pending')}</span>
+                    <span class="team-score ${score1Class}">${m.s1 !== null ? m.s1 : '-'}</span>
+                </div>
+                <div class="team ${m.winner === m.p2 ? 'winner' : ''}" style="${style2}">
+                    <span class="team-name">${m.p2 || t('lbl_pending')}</span>
+                    <span class="team-score ${score2Class}">${m.s2 !== null ? m.s2 : '-'}</span>
+                </div>
+            `;
+            return div;
+        }
+
+        // --- Lógica del Modal y Resultados ---
+
+        function openModal(matchId) {
+            currentEditingMatch = null;
+            let match = null;
+
+            if (matchId === 'tp-final') {
+                match = tournamentData.thirdPlaceMatch;
+            } else {
+                for (let round of tournamentData.rounds) {
+                    match = round.find(m => m.id === matchId);
+                    if (match) break;
+                }
+            }
+
+            if (!match || !match.p1 || !match.p2) return;
+
+            currentEditingMatch = match;
+            els.modalP1.textContent = match.p1;
+            els.modalP2.textContent = match.p2;
+            els.modalScore1.value = match.s1 !== null ? match.s1 : '';
+            els.modalScore2.value = match.s2 !== null ? match.s2 : '';
+            
+            els.modal.classList.add('open');
+            els.modalScore1.focus();
+        }
+
+        function closeModal() {
+            els.modal.classList.remove('open');
+            currentEditingMatch = null;
+        }
+
+        // Prevenir recarga al presionar Enter
+        [els.modalScore1, els.modalScore2].forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (document.activeElement === els.modalScore1) {
+                        saveResult(0);
+                    } else {
+                        saveResult(1);
+                    }
+                }
+            });
+        });
+
+        els.btnCancel.addEventListener('click', closeModal);
+
+        els.btnW1.addEventListener('click', () => saveResult(0));
+        els.btnW2.addEventListener('click', () => saveResult(1));
+
+        function saveResult(winnerIdx) {
+            if (!currentEditingMatch) return;
+
+            const s1 = parseInt(els.modalScore1.value) || 0;
+            const s2 = parseInt(els.modalScore2.value) || 0;
+
+            currentEditingMatch.s1 = s1;
+            currentEditingMatch.s2 = s2;
+
+            if (winnerIdx === 0) {
+                currentEditingMatch.winner = currentEditingMatch.p1;
+            } else {
+                currentEditingMatch.winner = currentEditingMatch.p2;
+            }
+
+            const isFinal = (currentEditingMatch.id.includes('r' + tournamentData.rounds.length + '-'));
+            const isSemi = tournamentData.rounds.length > 1 && 
+                           tournamentData.rounds[tournamentData.rounds.length - 2].some(m => m.id === currentEditingMatch.id);
+            
+            if (isSemi && tournamentData.enableThirdPlace) {
+                const semiRound = tournamentData.rounds[tournamentData.rounds.length - 2];
+                const semiIndex = semiRound.findIndex(m => m.id === currentEditingMatch.id);
+                
+                const finalMatch = tournamentData.rounds[tournamentData.rounds.length - 1][0];
+                if (semiIndex === 0) finalMatch.p1 = currentEditingMatch.winner;
+                else finalMatch.p2 = currentEditingMatch.winner;
+
+                const loser = (winnerIdx === 0) ? currentEditingMatch.p2 : currentEditingMatch.p1;
+                if (semiIndex === 0) tournamentData.thirdPlaceMatch.p1 = loser;
+                else tournamentData.thirdPlaceMatch.p2 = loser;
+            } 
+            else if (!isFinal && !currentEditingMatch.id.includes('tp-final')) {
+                for (let i = 0; i < tournamentData.rounds.length; i++) {
+                    const round = tournamentData.rounds[i];
+                    const matchIndex = round.findIndex(m => m.id === currentEditingMatch.id);
+                    
+                    if (matchIndex !== -1 && i < tournamentData.rounds.length - 1) {
+                        const nextRound = tournamentData.rounds[i + 1];
+                        const nextMatchIndex = Math.floor(matchIndex / 2);
+                        const nextMatch = nextRound[nextMatchIndex];
+
+                        if (matchIndex % 2 === 0) {
+                            nextMatch.p1 = currentEditingMatch.winner;
+                        } else {
+                            nextMatch.p2 = currentEditingMatch.winner;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            closeModal();
+            renderBracket();
+        }
+
+                // ============================================================
+        // EXPORTAR BRACKET COMO IMAGEN (PNG / JPEG / WEBP)
+        // ============================================================
+        els.btnExport.addEventListener('click', () => {
+            if (tournamentData.rounds.length === 0) {
+                return showToast(t('msg_no_export'), 'error');
+            }
+            els.exportModal.classList.add('open');
+        });
+
+        els.btnCancelExport.addEventListener('click', () => {
+            els.exportModal.classList.remove('open');
+        });
+
+        document.querySelectorAll('.export-format-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                exportBracketAsImage(btn.dataset.format);
+            });
+        });
+
+        async function exportBracketAsImage(format) {
+            els.exportModal.classList.remove('open');
+            showToast(t('msg_exporting'), 'info');
+
+            const bracketEl = els.bracket;
+            const savedZoom = els.zoomSlider.value;
+            // ✅ Guardar paddings por si el CSS cambia en el futuro
+            const savedPadding = {
+                top:    bracketEl.style.paddingTop,
+                right:  bracketEl.style.paddingRight,
+                bottom: bracketEl.style.paddingBottom,
+                left:   bracketEl.style.paddingLeft
+            };
+
+            try {
+                // 1) Forzar zoom = 1 (captura a escala nativa, sin deformación)
+                bracketEl.style.zoom = '1';
+                els.zoomSlider.value = '1';
+
+                // ✅ 2) Padding temporal para que los títulos de ronda (.round-title
+                //    con top:-1.5rem) queden DENTRO del área capturada.
+                //    Sin esto, html2canvas los recorta porque sobresalen del bounding box.
+                bracketEl.style.paddingTop    = '2.5rem';
+                bracketEl.style.paddingRight  = '1.5rem';
+                bracketEl.style.paddingBottom = '1.5rem';
+                bracketEl.style.paddingLeft   = '1rem';
+
+                await new Promise(r => requestAnimationFrame(r));
+
+                // 3) Redibujar líneas SVG con la nueva escala Y los nuevos offsets
+                drawBracketLines();
+                await new Promise(r => requestAnimationFrame(r));
+
+                // 4) Capturar el DOM a canvas (scale=2 → nítido en retina)
+                const canvas = await html2canvas(bracketEl, {
+                    backgroundColor: '#f1f5f9',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    width: bracketEl.scrollWidth,
+                    height: bracketEl.scrollHeight,
+                    windowWidth: bracketEl.scrollWidth,
+                    windowHeight: bracketEl.scrollHeight
+                });
+
+                // 5) Mapear formato → MIME + extensión + calidad
+                const mimeType = {
+                    png:  'image/png',
+                    jpeg: 'image/jpeg',
+                    webp: 'image/webp'
+                }[format] || 'image/png';
+
+                const extension = (format === 'jpeg') ? 'jpg' : format;
+                const quality   = (format === 'png')  ? undefined : 0.92;
+
+                // 6) Convertir a blob y descargar
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        showToast(t('msg_export_error'), 'error');
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const stamp = new Date().toISOString().slice(0, 10);
+                    a.href = url;
+                    a.download = `torneo_${stamp}.${extension}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast(t('msg_exported'), 'success');
+                }, mimeType, quality);
+
+            } catch (err) {
+                console.error(err);
+                showToast(t('msg_export_error'), 'error');
+            } finally {
+                // 6) Restaurar zoom Y paddings originales
+                bracketEl.style.zoom = savedZoom;
+                bracketEl.style.paddingTop    = savedPadding.top;
+                bracketEl.style.paddingRight  = savedPadding.right;
+                bracketEl.style.paddingBottom = savedPadding.bottom;
+                bracketEl.style.paddingLeft   = savedPadding.left;
+                els.zoomSlider.value = savedZoom;
+                await new Promise(r => requestAnimationFrame(r));
+                drawBracketLines();
+            }
+        }
+
+        // --- Init Idioma ---
+        document.getElementById('langSelector').addEventListener('change', (e) => {
+            updateLanguageUI(e.target.value);
+        });
+
+    </script>
+</body>
+</html>
