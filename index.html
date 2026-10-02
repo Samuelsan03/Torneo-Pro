@@ -201,13 +201,14 @@
             justify-content: center;
         }
         .third-wrapper {
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: calc(50% + 15.55rem); /* ✅ bajado 2.5rem más (antes 3.5rem) sin tocar la final */
-            display: flex;
-            flex-direction: column;
-        }
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    margin-top: 248px; /* Equivalente a 15.5rem pero 100% compatible con html2canvas */
+    display: flex;
+    flex-direction: column;
+}
 
         .third-place-separator {
             width: 100%;
@@ -1944,93 +1945,99 @@ function drawBracketLines() {
         });
 
         async function exportBracketAsImage(format) {
-            els.exportModal.classList.remove('open');
-            showToast(t('msg_exporting'), 'info');
+    els.exportModal.classList.remove('open');
+    showToast(t('msg_exporting'), 'info');
 
-            const bracketEl = els.bracket;
-            const savedZoom = els.zoomSlider.value;
-            // ✅ Guardar paddings por si el CSS cambia en el futuro
-            const savedPadding = {
-                top:    bracketEl.style.paddingTop,
-                right:  bracketEl.style.paddingRight,
-                bottom: bracketEl.style.paddingBottom,
-                left:   bracketEl.style.paddingLeft
-            };
+    const bracketEl = els.bracket;
+    const savedZoom = els.zoomSlider.value;
+    const savedPadding = {
+        top:    bracketEl.style.paddingTop,
+        right:  bracketEl.style.paddingRight,
+        bottom: bracketEl.style.paddingBottom,
+        left:   bracketEl.style.paddingLeft
+    };
 
-            try {
-                // 1) Forzar zoom = 1 (captura a escala nativa, sin deformación)
-                bracketEl.style.zoom = '1';
-                els.zoomSlider.value = '1';
+    try {
+        // 1) Forzar zoom = 1 (captura a escala nativa, sin deformación)
+        bracketEl.style.zoom = '1';
+        els.zoomSlider.value = '1';
+        
+        // ✅ Forzar reflow para que el navegador calcule las nuevas dimensiones
+        void bracketEl.offsetWidth; 
 
-                // ✅ 2) Padding temporal para que los títulos de ronda (.round-title
-                //    con top:-1.5rem) queden DENTRO del área capturada.
-                //    Sin esto, html2canvas los recorta porque sobresalen del bounding box.
-                bracketEl.style.paddingTop    = '2.5rem';
-                bracketEl.style.paddingRight  = '1.5rem';
-                bracketEl.style.paddingBottom = '1.5rem';
-                bracketEl.style.paddingLeft   = '1rem';
+        // 2) Padding temporal para que los títulos de ronda queden DENTRO del área capturada
+        bracketEl.style.paddingTop    = '2.5rem';
+        bracketEl.style.paddingRight  = '1.5rem';
+        bracketEl.style.paddingBottom = '1.5rem';
+        bracketEl.style.paddingLeft   = '1rem';
+        
+        // ✅ Forzar reflow de nuevo tras cambiar el padding
+        void bracketEl.offsetWidth;
 
-                await new Promise(r => requestAnimationFrame(r));
+        // Esperar un poco para asegurar que el DOM está estable
+        await new Promise(r => setTimeout(r, 100));
 
-                // 3) Redibujar líneas SVG con la nueva escala Y los nuevos offsets
-                drawBracketLines();
-                await new Promise(r => requestAnimationFrame(r));
+        // 3) Redibujar líneas SVG con la nueva escala y offsets
+        drawBracketLines();
+        await new Promise(r => setTimeout(r, 100));
 
-                // 4) Capturar el DOM a canvas (scale=2 → nítido en retina)
-                const canvas = await html2canvas(bracketEl, {
-                    backgroundColor: '#f1f5f9',
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    width: bracketEl.scrollWidth,
-                    height: bracketEl.scrollHeight,
-                    windowWidth: bracketEl.scrollWidth,
-                    windowHeight: bracketEl.scrollHeight
-                });
+        // 4) Capturar el DOM a canvas (scale=2 → nítido en retina)
+        const canvas = await html2canvas(bracketEl, {
+            backgroundColor: '#f1f5f9',
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            width: bracketEl.scrollWidth,
+            height: bracketEl.scrollHeight
+            // ✅ Se eliminaron windowWidth y windowHeight que causaban desajustes
+        });
 
-                // 5) Mapear formato → MIME + extensión + calidad
-                const mimeType = {
-                    png:  'image/png',
-                    jpeg: 'image/jpeg',
-                    webp: 'image/webp'
-                }[format] || 'image/png';
+        // 5) Mapear formato → MIME + extensión + calidad
+        const mimeType = {
+            png:  'image/png',
+            jpeg: 'image/jpeg',
+            webp: 'image/webp'
+        }[format] || 'image/png';
 
-                const extension = (format === 'jpeg') ? 'jpg' : format;
-                const quality   = (format === 'png')  ? undefined : 0.92;
+        const extension = (format === 'jpeg') ? 'jpg' : format;
+        const quality   = (format === 'png')  ? undefined : 0.92;
 
-                // 6) Convertir a blob y descargar
-                canvas.toBlob((blob) => {
-                    if (!blob) {
-                        showToast(t('msg_export_error'), 'error');
-                        return;
-                    }
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    const stamp = new Date().toISOString().slice(0, 10);
-                    a.href = url;
-                    a.download = `torneo_${stamp}.${extension}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    showToast(t('msg_exported'), 'success');
-                }, mimeType, quality);
-
-            } catch (err) {
-                console.error(err);
+        // 6) Convertir a blob y descargar
+        canvas.toBlob((blob) => {
+            if (!blob) {
                 showToast(t('msg_export_error'), 'error');
-            } finally {
-                // 6) Restaurar zoom Y paddings originales
-                bracketEl.style.zoom = savedZoom;
-                bracketEl.style.paddingTop    = savedPadding.top;
-                bracketEl.style.paddingRight  = savedPadding.right;
-                bracketEl.style.paddingBottom = savedPadding.bottom;
-                bracketEl.style.paddingLeft   = savedPadding.left;
-                els.zoomSlider.value = savedZoom;
-                await new Promise(r => requestAnimationFrame(r));
-                drawBracketLines();
+                return;
             }
-        }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const stamp = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `torneo_${stamp}.${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(t('msg_exported'), 'success');
+        }, mimeType, quality);
+
+    } catch (err) {
+        console.error(err);
+        showToast(t('msg_export_error'), 'error');
+    } finally {
+        // 7) Restaurar zoom Y paddings originales
+        bracketEl.style.zoom = savedZoom;
+        bracketEl.style.paddingTop    = savedPadding.top;
+        bracketEl.style.paddingRight  = savedPadding.right;
+        bracketEl.style.paddingBottom = savedPadding.bottom;
+        bracketEl.style.paddingLeft   = savedPadding.left;
+        els.zoomSlider.value = savedZoom;
+        
+        // ✅ Forzar reflow antes de restaurar las líneas
+        void bracketEl.offsetWidth;
+        await new Promise(r => setTimeout(r, 50));
+        drawBracketLines();
+    }
+}
 
         // --- Init Idioma ---
         document.getElementById('langSelector').addEventListener('change', (e) => {
