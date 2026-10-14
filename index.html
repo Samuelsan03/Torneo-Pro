@@ -794,6 +794,8 @@
                 lbl_pending: "Pendiente...",
                 lbl_pen: "Penales",
                 msg_pen_tie: "¡Los penales también están empatados! Debe haber un ganador en penales.",
+                msg_pen_missing: "El partido está empatado. Debes ingresar los penales para definir al ganador.",
+                msg_pen_winner_mismatch: "El ganador seleccionado no coincide con el resultado de los penales.",
                 round_final: "Gran Final",
                 round_semi: "Semifinal",
                 round_quarter: "Cuartos de Final",
@@ -861,6 +863,8 @@
                 lbl_pending: "Pending...",
                 lbl_pen: "Penalties",
                 msg_pen_tie: "Penalties are also tied! There must be a penalty winner.",
+                msg_pen_missing: "The match is tied. You must enter penalties to determine the winner.",
+                msg_pen_winner_mismatch: "The selected winner does not match the penalty result.",
                 round_final: "Grand Final",
                 round_semi: "Semifinal",
                 round_quarter: "Quarter-Finals",
@@ -928,6 +932,8 @@
                 lbl_pending: "待定...",
                 lbl_pen: "点球",
                 msg_pen_tie: "点球也平局！必须有点球胜者。",
+                msg_pen_missing: "比赛平局。您必须输入点球来决定胜者。",
+                msg_pen_winner_mismatch: "选择的胜者与点球结果不匹配。",
                 round_final: "总决赛",
                 round_semi: "半决赛",
                 round_quarter: "四分之一决赛",
@@ -995,6 +1001,8 @@
                 lbl_pending: "保留中...",
                 lbl_pen: "PK戦",
                 msg_pen_tie: "PK戦も同点です！PK戦の勝者が必要です。",
+                msg_pen_missing: "試合は引き分けです。勝者を決定するためにPK戦を入力してください。",
+                msg_pen_winner_mismatch: "選択された勝者はPK戦の結果と一致しません。",
                 round_final: "決勝",
                 round_semi: "準決勝",
                 round_quarter: "準々決勝",
@@ -1062,6 +1070,8 @@
                 lbl_pending: "대기 중...",
                 lbl_pen: "승부차기",
                 msg_pen_tie: "승부차기도 동점입니다! 승부차기 승자가 있어야 합니다.",
+                msg_pen_missing: "경기가 동점입니다. 승자를 결정하기 위해 승부차기를 입력해야 합니다.",
+                msg_pen_winner_mismatch: "선택된 승자가 승부차기 결과와 일치하지 않습니다.",
                 round_final: "결승전",
                 round_semi: "준결승",
                 round_quarter: "8강",
@@ -1920,8 +1930,19 @@ function drawBracketLines() {
 
         // ✅ Mostrar inputs de penales si hay empate
         function togglePenaltyInputs() {
-            const s1 = parseInt(els.modalScore1.value);
-            const s2 = parseInt(els.modalScore2.value);
+            const val1 = els.modalScore1.value.trim();
+            const val2 = els.modalScore2.value.trim();
+            const s1 = parseInt(val1);
+            const s2 = parseInt(val2);
+
+            // Si ambos inputs están vacíos, no mostrar por defecto
+            if (val1 === '' && val2 === '') {
+                els.penBox1.classList.remove('show');
+                els.penBox2.classList.remove('show');
+                els.modalPen1.value = '';
+                els.modalPen2.value = '';
+                return;
+            }
 
             if (!isNaN(s1) && !isNaN(s2) && s1 === s2) {
                 els.penBox1.classList.add('show');
@@ -1967,24 +1988,36 @@ function drawBracketLines() {
             currentEditingMatch.s1 = s1;
             currentEditingMatch.s2 = s2;
 
-            // ✅ Lógica de penales: si empatan en goles
+            // ✅ Lógica de penales corregida: sin autocompletar, estrictamente obligatorio
             let pen1 = null, pen2 = null;
             if (s1 === s2) {
+                // Forzar visualización de las cajas de penales
+                els.penBox1.classList.add('show');
+                els.penBox2.classList.add('show');
+
                 pen1 = parseInt(els.modalPen1.value);
                 pen2 = parseInt(els.modalPen2.value);
                 
-                // Si el usuario no introdujo penales, autocompletamos con una suposición lógica (5-4)
+                // Validar que se hayan ingresado los penales
                 if (isNaN(pen1) || isNaN(pen2)) {
-                    pen1 = winnerIdx === 0 ? 5 : 4;
-                    pen2 = winnerIdx === 1 ? 5 : 4;
-                } else if (pen1 === pen2) {
-                    // ✅ NUEVO: Si empatan en penales, mostrar error y abortar
+                    showToast(t('msg_pen_missing'), 'error');
+                    return; // Detener guardado
+                } 
+                // Validar que los penales no estén empatados
+                else if (pen1 === pen2) {
                     showToast(t('msg_pen_tie'), 'error');
-                    return; // Detener la función aquí
-                } else {
-                    // Asegurarnos de que el que ganó tenga más penales
-                    if (winnerIdx === 0 && pen1 <= pen2) pen1 = pen2 + 1;
-                    if (winnerIdx === 1 && pen2 <= pen1) pen2 = pen1 + 1;
+                    return; // Detener guardado
+                } 
+                // Validar que el ganador coincida con el resultado de penales
+                else {
+                    if (winnerIdx === 0 && pen1 < pen2) {
+                        showToast(t('msg_pen_winner_mismatch'), 'error');
+                        return;
+                    }
+                    if (winnerIdx === 1 && pen2 < pen1) {
+                        showToast(t('msg_pen_winner_mismatch'), 'error');
+                        return;
+                    }
                 }
             }
             currentEditingMatch.pen1 = pen1;
@@ -2166,4 +2199,4 @@ function drawBracketLines() {
 
     </script>
 </body>
-</html
+</html>
