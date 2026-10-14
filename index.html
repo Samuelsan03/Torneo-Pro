@@ -150,6 +150,7 @@
             min-width: min-content;
             transition: transform 0.2s ease;
             transform-origin: top center;
+            position: relative; /* ✅ NUEVO: ancla el SVG overlay */
         }
 
         .round {
@@ -201,14 +202,14 @@
             justify-content: center;
         }
         .third-wrapper {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    margin-top: 248px; /* Equivalente a 15.5rem pero 100% compatible con html2canvas */
-    display: flex;
-    flex-direction: column;
-}
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            margin-top: 248px; /* Equivalente a 15.5rem pero 100% compatible con html2canvas */
+            display: flex;
+            flex-direction: column;
+        }
 
         .third-place-separator {
             width: 100%;
@@ -240,25 +241,15 @@
         }
         .match.playable:hover::before { opacity: 0.2; }
 
-        .bracket {
-    display: flex;
-    gap: 4rem;
-    margin: 0 auto;
-    min-width: min-content;
-    transition: transform 0.2s ease;
-    transform-origin: top center;
-    position: relative; /* ✅ NUEVO: ancla el SVG overlay */
-}
-
-/* ✅ NUEVO: estilo del overlay SVG */
-#bracket-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    overflow: visible;
-    z-index: 0;
-}
+        /* ✅ NUEVO: estilo del overlay SVG */
+        #bracket-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: visible;
+            z-index: 0;
+        }
 
         .team {
             padding: 0.8rem;
@@ -281,6 +272,16 @@
             width: 40px; 
             text-align: center; 
             min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .pen-score { 
+            font-size: 0.7em; 
+            opacity: 0.7; 
+            margin-left: 2px;
         }
 
         .score-green { color: var(--success); }
@@ -392,6 +393,30 @@
         }
         .score-box {
             -moz-appearance: textfield;
+        }
+
+        /* ✅ Caja de penales dentro del modal */
+        .penalty-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            animation: fadeIn 0.2s ease;
+        }
+        .penalty-box.show {
+            display: flex;
+        }
+        .penalty-box small {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .penalty-box .score-box {
+            width: 60px;
+            height: 35px;
+            font-size: 1rem;
+            padding: 0.2rem;
         }
 
         .btn-winner-column {
@@ -595,6 +620,10 @@
                 <div class="player-column">
                     <div class="player-name-display" id="modal-p1">Jugador 1</div>
                     <input type="number" id="modal-score1" class="score-box" placeholder="0" min="0">
+                    <div id="pen-box1" class="penalty-box">
+                        <small data-i18n="lbl_pen">Penales</small>
+                        <input type="number" id="modal-pen1" class="score-box" placeholder="-" min="0">
+                    </div>
                     <button id="modal-btn-w1" class="btn-winner-column" data-i18n="modal_win">Ganar</button>
                 </div>
 
@@ -605,6 +634,10 @@
                 <div class="player-column">
                     <div class="player-name-display" id="modal-p2">Jugador 2</div>
                     <input type="number" id="modal-score2" class="score-box" placeholder="0" min="0">
+                    <div id="pen-box2" class="penalty-box">
+                        <small data-i18n="lbl_pen">Penales</small>
+                        <input type="number" id="modal-pen2" class="score-box" placeholder="-" min="0">
+                    </div>
                     <button id="modal-btn-w2" class="btn-winner-column" data-i18n="modal_win">Ganar</button>
                 </div>
             </div>
@@ -759,6 +792,8 @@
                 lbl_txt: "Texto",
                 lbl_player: "Jugador",
                 lbl_pending: "Pendiente...",
+                lbl_pen: "Penales",
+                msg_pen_tie: "¡Los penales también están empatados! Debe haber un ganador en penales.",
                 round_final: "Gran Final",
                 round_semi: "Semifinal",
                 round_quarter: "Cuartos de Final",
@@ -824,6 +859,8 @@
                 lbl_txt: "Text",
                 lbl_player: "Player",
                 lbl_pending: "Pending...",
+                lbl_pen: "Penalties",
+                msg_pen_tie: "Penalties are also tied! There must be a penalty winner.",
                 round_final: "Grand Final",
                 round_semi: "Semifinal",
                 round_quarter: "Quarter-Finals",
@@ -889,6 +926,8 @@
                 lbl_txt: "文本",
                 lbl_player: "选手",
                 lbl_pending: "待定...",
+                lbl_pen: "点球",
+                msg_pen_tie: "点球也平局！必须有点球胜者。",
                 round_final: "总决赛",
                 round_semi: "半决赛",
                 round_quarter: "四分之一决赛",
@@ -954,6 +993,8 @@
                 lbl_txt: "テキスト",
                 lbl_player: "プレイヤー",
                 lbl_pending: "保留中...",
+                lbl_pen: "PK戦",
+                msg_pen_tie: "PK戦も同点です！PK戦の勝者が必要です。",
                 round_final: "決勝",
                 round_semi: "準決勝",
                 round_quarter: "準々決勝",
@@ -1019,6 +1060,8 @@
                 lbl_txt: "텍스트",
                 lbl_player: "플레이어",
                 lbl_pending: "대기 중...",
+                lbl_pen: "승부차기",
+                msg_pen_tie: "승부차기도 동점입니다! 승부차기 승자가 있어야 합니다.",
                 round_final: "결승전",
                 round_semi: "준결승",
                 round_quarter: "8강",
@@ -1107,6 +1150,10 @@
             modalP2: document.getElementById('modal-p2'),
             modalScore1: document.getElementById('modal-score1'),
             modalScore2: document.getElementById('modal-score2'),
+            modalPen1: document.getElementById('modal-pen1'),
+            modalPen2: document.getElementById('modal-pen2'),
+            penBox1: document.getElementById('pen-box1'),
+            penBox2: document.getElementById('pen-box2'),
             btnCancel: document.getElementById('modal-btn-cancel'),
             btnW1: document.getElementById('modal-btn-w1'),
             btnW2: document.getElementById('modal-btn-w2'),
@@ -1140,6 +1187,8 @@
                 p2: null,
                 s1: null,
                 s2: null,
+                pen1: null,
+                pen2: null,
                 winner: null
             }
         };
@@ -1366,7 +1415,9 @@
                 p1: null, 
                 p2: null, 
                 s1: null, 
-                s2: null, 
+                s2: null,
+                pen1: null,
+                pen2: null,
                 winner: null 
             };
             isEditingMode = false; // ✅ Consumir la bandera
@@ -1471,15 +1522,15 @@
         });
 
         // --- Logic Localized ---
-        function getRoundName(total, rIndex, totalRounds) {
-            const isFinal = rIndex === totalRounds - 1;
-            const isSemi = rIndex === totalRounds - 2;
+        function getRoundName(total, rIdx, totalRounds) {
+            const isFinal = rIdx === totalRounds - 1;
+            const isSemi = rIdx === totalRounds - 2;
             if (isFinal) return t('round_final');
             if (isSemi) return t('round_semi');
-            if (total / Math.pow(2, rIndex) === 8) return t('round_quarter');
-            if (total / Math.pow(2, rIndex) === 16) return t('round_ro16');
-            if (total / Math.pow(2, rIndex) === 32) return t('round_ro32');
-            if (total / Math.pow(2, rIndex) === 64) return t('round_ro64');
+            if (total / Math.pow(2, rIdx) === 8) return t('round_quarter');
+            if (total / Math.pow(2, rIdx) === 16) return t('round_ro16');
+            if (total / Math.pow(2, rIdx) === 32) return t('round_ro32');
+            if (total / Math.pow(2, rIdx) === 64) return t('round_ro64');
             return t('round_generic', {n: rIdx + 1});
         }
 
@@ -1495,7 +1546,9 @@
                     id: `r1-m${i}`,
                     p1: names[nameIdx++] || "BYE",
                     p2: names[nameIdx++] || "BYE",
-                    s1: null, s2: null, winner: null
+                    s1: null, s2: null, 
+                    pen1: null, pen2: null, // ✅ Agregado penales
+                    winner: null
                 });
             }
             tournamentData.rounds.push(round1);
@@ -1507,7 +1560,9 @@
                     currRound.push({
                         id: `r${r+1}-m${i}`,
                         p1: null, p2: null,
-                        s1: null, s2: null, winner: null,
+                        s1: null, s2: null, 
+                        pen1: null, pen2: null, // ✅ Agregado penales
+                        winner: null,
                         prev1: tournamentData.rounds[r-1][i*2].id,
                         prev2: tournamentData.rounds[r-1][i*2+1].id
                     });
@@ -1769,14 +1824,19 @@ function drawBracketLines() {
             const style1 = c1 ? `background-color:${c1.bg}; color:${c1.txt};` : '';
             const style2 = c2 ? `background-color:${c2.bg}; color:${c2.txt};` : '';
 
+            const score1Text = match.s1 !== null ? match.s1 : '-';
+            const score2Text = match.s2 !== null ? match.s2 : '-';
+            const pen1Text = (match.pen1 !== null && match.pen1 !== undefined) ? ` <span class="pen-score">(${match.pen1})</span>` : '';
+            const pen2Text = (match.pen2 !== null && match.pen2 !== undefined) ? ` <span class="pen-score">(${match.pen2})</span>` : '';
+
             div.innerHTML = `
                 <div class="team ${match.winner === match.p1 ? 'winner' : ''} ${!match.winner && match.s1 !== null ? 'loser' : ''}" style="${style1}">
                     <span class="team-name">${match.p1 || '...'}</span>
-                    <span class="team-score ${score1Class}">${match.s1 !== null ? match.s1 : '-'}</span>
+                    <span class="team-score ${score1Class}">${score1Text}${pen1Text}</span>
                 </div>
                 <div class="team ${match.winner === match.p2 ? 'winner' : ''} ${!match.winner && match.s2 !== null ? 'loser' : ''}" style="${style2}">
                     <span class="team-name">${match.p2 || '...'}</span>
-                    <span class="team-score ${score2Class}">${match.s2 !== null ? match.s2 : '-'}</span>
+                    <span class="team-score ${score2Class}">${score2Text}${pen2Text}</span>
                 </div>
             `;
             return div;
@@ -1805,14 +1865,19 @@ function drawBracketLines() {
             const style1 = c1 ? `background-color:${c1.bg}; color:${c1.txt};` : '';
             const style2 = c2 ? `background-color:${c2.bg}; color:${c2.txt};` : '';
 
+            const score1Text = m.s1 !== null ? m.s1 : '-';
+            const score2Text = m.s2 !== null ? m.s2 : '-';
+            const pen1Text = (m.pen1 !== null && m.pen1 !== undefined) ? ` <span class="pen-score">(${m.pen1})</span>` : '';
+            const pen2Text = (m.pen2 !== null && m.pen2 !== undefined) ? ` <span class="pen-score">(${m.pen2})</span>` : '';
+
             div.innerHTML = `
                 <div class="team ${m.winner === m.p1 ? 'winner' : ''}" style="${style1}">
                     <span class="team-name">${m.p1 || t('lbl_pending')}</span>
-                    <span class="team-score ${score1Class}">${m.s1 !== null ? m.s1 : '-'}</span>
+                    <span class="team-score ${score1Class}">${score1Text}${pen1Text}</span>
                 </div>
                 <div class="team ${m.winner === m.p2 ? 'winner' : ''}" style="${style2}">
                     <span class="team-name">${m.p2 || t('lbl_pending')}</span>
-                    <span class="team-score ${score2Class}">${m.s2 !== null ? m.s2 : '-'}</span>
+                    <span class="team-score ${score2Class}">${score2Text}${pen2Text}</span>
                 </div>
             `;
             return div;
@@ -1840,7 +1905,10 @@ function drawBracketLines() {
             els.modalP2.textContent = match.p2;
             els.modalScore1.value = match.s1 !== null ? match.s1 : '';
             els.modalScore2.value = match.s2 !== null ? match.s2 : '';
+            els.modalPen1.value = match.pen1 !== null && match.pen1 !== undefined ? match.pen1 : '';
+            els.modalPen2.value = match.pen2 !== null && match.pen2 !== undefined ? match.pen2 : '';
             
+            togglePenaltyInputs(); // Verificar si hay empate para mostrar penales
             els.modal.classList.add('open');
             els.modalScore1.focus();
         }
@@ -1850,12 +1918,33 @@ function drawBracketLines() {
             currentEditingMatch = null;
         }
 
+        // ✅ Mostrar inputs de penales si hay empate
+        function togglePenaltyInputs() {
+            const s1 = parseInt(els.modalScore1.value);
+            const s2 = parseInt(els.modalScore2.value);
+
+            if (!isNaN(s1) && !isNaN(s2) && s1 === s2) {
+                els.penBox1.classList.add('show');
+                els.penBox2.classList.add('show');
+            } else {
+                els.penBox1.classList.remove('show');
+                els.penBox2.classList.remove('show');
+                // Limpiar penales si ya no hay empate
+                els.modalPen1.value = '';
+                els.modalPen2.value = '';
+            }
+        }
+
+        // Escuchar cambios en los inputs de goles para mostrar/ocultar penales
+        els.modalScore1.addEventListener('input', togglePenaltyInputs);
+        els.modalScore2.addEventListener('input', togglePenaltyInputs);
+
         // Prevenir recarga al presionar Enter
-        [els.modalScore1, els.modalScore2].forEach(input => {
+        [els.modalScore1, els.modalScore2, els.modalPen1, els.modalPen2].forEach(input => {
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (document.activeElement === els.modalScore1) {
+                    if (document.activeElement === els.modalScore1 || document.activeElement === els.modalPen1) {
                         saveResult(0);
                     } else {
                         saveResult(1);
@@ -1877,6 +1966,29 @@ function drawBracketLines() {
 
             currentEditingMatch.s1 = s1;
             currentEditingMatch.s2 = s2;
+
+            // ✅ Lógica de penales: si empatan en goles
+            let pen1 = null, pen2 = null;
+            if (s1 === s2) {
+                pen1 = parseInt(els.modalPen1.value);
+                pen2 = parseInt(els.modalPen2.value);
+                
+                // Si el usuario no introdujo penales, autocompletamos con una suposición lógica (5-4)
+                if (isNaN(pen1) || isNaN(pen2)) {
+                    pen1 = winnerIdx === 0 ? 5 : 4;
+                    pen2 = winnerIdx === 1 ? 5 : 4;
+                } else if (pen1 === pen2) {
+                    // ✅ NUEVO: Si empatan en penales, mostrar error y abortar
+                    showToast(t('msg_pen_tie'), 'error');
+                    return; // Detener la función aquí
+                } else {
+                    // Asegurarnos de que el que ganó tenga más penales
+                    if (winnerIdx === 0 && pen1 <= pen2) pen1 = pen2 + 1;
+                    if (winnerIdx === 1 && pen2 <= pen1) pen2 = pen1 + 1;
+                }
+            }
+            currentEditingMatch.pen1 = pen1;
+            currentEditingMatch.pen2 = pen2;
 
             if (winnerIdx === 0) {
                 currentEditingMatch.winner = currentEditingMatch.p1;
@@ -2054,4 +2166,4 @@ function drawBracketLines() {
 
     </script>
 </body>
-</html>
+</html
