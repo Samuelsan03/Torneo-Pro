@@ -574,6 +574,8 @@
                     <option value="16" selected data-i18n="opt_16">16 (Octavos)</option>
                     <option value="32" data-i18n="opt_32">32 (Dieciseisavos)</option>
                     <option value="64" data-i18n="opt_64">64 (Treintaidosavos)</option>
+                    <option value="128" data-i18n="opt_128">128 (Sesentaicuatroavos)</option>
+                    <option value="256" data-i18n="opt_256">256 (Cientoveintiochoavos)</option>
                 </select>
                 <button id="btn-create" class="secondary" data-i18n="btn_create">Crear Bracket</button>
                 <button class="outline" id="btn-edit-participants" data-i18n="btn_edit_participants">✏️ Editar</button>
@@ -760,6 +762,8 @@
                 opt_16: "16 (Octavos)",
                 opt_32: "32 (Dieciseisavos)",
                 opt_64: "64 (Treintaidosavos)",
+                opt_128: "128 (Sesentaicuatroavos)",
+                opt_256: "256 (Cientoveintiochoavos)",
                 btn_create: "Crear Bracket",
                 btn_edit_participants: "✏️ Editar",
                 btn_reset: "Reiniciar",
@@ -803,6 +807,8 @@
                 round_ro16: "Octavos de Final",
                 round_ro32: "Dieciseisavos",
                 round_ro64: "Treintaidosavos",
+                round_ro128: "Sesentaicuatroavos",
+                round_ro256: "Cientoveintiochoavos",
                 round_generic: "Ronda {n}",
                 third_place_label: "Tercer y Cuarto Puesto",
                 btn_export: "🖼️ Exportar",
@@ -829,6 +835,8 @@
                 opt_16: "16 (Round of 16)",
                 opt_32: "32 (Round of 32)",
                 opt_64: "64 (Round of 64)",
+                opt_128: "128 (Round of 128)",
+                opt_256: "256 (Round of 256)",
                 btn_create: "Create Bracket",
                 btn_edit_participants: "✏️ Edit",
                 btn_reset: "Reset",
@@ -872,6 +880,8 @@
                 round_ro16: "Round of 16",
                 round_ro32: "Round of 32",
                 round_ro64: "Round of 64",
+                round_ro128: "Round of 128",
+                round_ro256: "Round of 256",
                 round_generic: "Round {n}",
                 third_place_label: "3rd Place Match",
                 btn_export: "🖼️ Export",
@@ -898,6 +908,8 @@
                 opt_16: "16 (十六强)",
                 opt_32: "32 (三十二强)",
                 opt_64: "64 (六十四强)",
+                opt_128: "128 (128强)",
+                opt_256: "256 (256强)",
                 btn_create: "创建对阵表",
                 btn_edit_participants: "✏️ 编辑",
                 btn_reset: "重置",
@@ -941,6 +953,8 @@
                 round_ro16: "十六强",
                 round_ro32: "三十二强",
                 round_ro64: "六十四强",
+                round_ro128: "128强",
+                round_ro256: "256强",
                 round_generic: "第 {n} 轮",
                 third_place_label: "季军争夺战",
                 btn_export: "🖼️ 导出",
@@ -967,6 +981,8 @@
                 opt_16: "16 (ベスト16)",
                 opt_32: "32 (ベスト32)",
                 opt_64: "64 (ベスト64)",
+                opt_128: "128 (ベスト128)",
+                opt_256: "256 (ベスト256)",
                 btn_create: "ブラケット作成",
                 btn_edit_participants: "✏️ 編集",
                 btn_reset: "リセット",
@@ -1010,6 +1026,8 @@
                 round_ro16: "ベスト16",
                 round_ro32: "ベスト32",
                 round_ro64: "ベスト64",
+                round_ro128: "ベスト128",
+                round_ro256: "ベスト256",
                 round_generic: "第 {n} ラウンド",
                 third_place_label: "3位決定戦",
                 btn_export: "🖼️ エクスポート",
@@ -1036,6 +1054,8 @@
                 opt_16: "16 (16강)",
                 opt_32: "32 (32강)",
                 opt_64: "64 (64강)",
+                opt_128: "128 (128강)",
+                opt_256: "256 (256강)",
                 btn_create: "브래킷 생성",
                 btn_edit_participants: "✏️ 편집",
                 btn_reset: "초기화",
@@ -1079,6 +1099,8 @@
                 round_ro16: "16강",
                 round_ro32: "32강",
                 round_ro64: "64강",
+                round_ro128: "128강",
+                round_ro256: "256강",
                 round_generic: "{n}라운드",
                 third_place_label: "3, 4위전",
                 btn_export: "🖼️ 내보내기",
@@ -1542,6 +1564,8 @@
             if (total / Math.pow(2, rIdx) === 16) return t('round_ro16');
             if (total / Math.pow(2, rIdx) === 32) return t('round_ro32');
             if (total / Math.pow(2, rIdx) === 64) return t('round_ro64');
+            if (total / Math.pow(2, rIdx) === 128) return t('round_ro128');
+            if (total / Math.pow(2, rIdx) === 256) return t('round_ro256');
             return t('round_generic', {n: rIdx + 1});
         }
 
