@@ -2268,11 +2268,11 @@ function drawSplitLines(svg, lx, ly, NS, bracket) {
             const pen2Text = (match.pen2 !== null && match.pen2 !== undefined) ? ` <span class="pen-score">(${match.pen2})</span>` : '';
 
             div.innerHTML = `
-                <div class="team ${match.winner === match.p1 ? 'winner' : ''} ${!match.winner && match.s1 !== null ? 'loser' : ''}" style="${style1}">
+                <div class="team ${match.p1 && match.winner === match.p1 ? 'winner' : ''} ${!match.winner && match.s1 !== null ? 'loser' : ''}" style="${style1}">
                     <span class="team-name">${match.p1 || '...'}</span>
                     <span class="team-score ${score1Class}">${score1Text}${pen1Text}</span>
                 </div>
-                <div class="team ${match.winner === match.p2 ? 'winner' : ''} ${!match.winner && match.s2 !== null ? 'loser' : ''}" style="${style2}">
+                <div class="team ${match.p2 && match.winner === match.p2 ? 'winner' : ''} ${!match.winner && match.s2 !== null ? 'loser' : ''}" style="${style2}">
                     <span class="team-name">${match.p2 || '...'}</span>
                     <span class="team-score ${score2Class}">${score2Text}${pen2Text}</span>
                 </div>
@@ -2309,11 +2309,11 @@ function drawSplitLines(svg, lx, ly, NS, bracket) {
             const pen2Text = (m.pen2 !== null && m.pen2 !== undefined) ? ` <span class="pen-score">(${m.pen2})</span>` : '';
 
             div.innerHTML = `
-                <div class="team ${m.winner === m.p1 ? 'winner' : ''}" style="${style1}">
+                <div class="team ${m.p1 && m.winner === m.p1 ? 'winner' : ''}" style="${style1}">
                     <span class="team-name">${m.p1 || t('lbl_pending')}</span>
                     <span class="team-score ${score1Class}">${score1Text}${pen1Text}</span>
                 </div>
-                <div class="team ${m.winner === m.p2 ? 'winner' : ''}" style="${style2}">
+                <div class="team ${m.p2 && m.winner === m.p2 ? 'winner' : ''}" style="${style2}">
                     <span class="team-name">${m.p2 || t('lbl_pending')}</span>
                     <span class="team-score ${score2Class}">${score2Text}${pen2Text}</span>
                 </div>
