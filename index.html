@@ -535,6 +535,108 @@
         #toast.error { background-color: var(--danger); }
         #toast.success { background-color: var(--success); }
 
+        /* ============================================================
+           NUEVO: Selector de diseño del bracket (lineal vs doble)
+           ============================================================ */
+        .design-mode-selector {
+            background: #f8fafc;
+            border: 1px solid var(--line-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .design-mode-selector > label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+        }
+        .design-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+        @media (max-width: 600px) {
+            .design-options { grid-template-columns: 1fr; }
+        }
+        .design-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 0.9rem;
+            border: 2px solid var(--line-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+        }
+        .design-option:hover { border-color: var(--primary); background: #eff6ff; }
+        .design-option input[type="radio"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            margin: 0;
+        }
+        .design-option.selected {
+            border-color: var(--primary);
+            background: #eff6ff;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+        .design-option .design-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .design-option .design-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .design-option .design-title { font-weight: 600; color: var(--text); }
+        .design-option .design-sub { font-size: 0.72rem; color: var(--text-light); }
+
+        /* ============================================================
+           NUEVO: Bracket en modo Doble (dos mitades + final central)
+           ============================================================ */
+        .bracket.split-mode {
+            display: flex;
+            gap: 2rem;
+            align-items: stretch;
+            justify-content: center;
+        }
+        .bracket-half {
+            display: flex;
+            gap: 4rem;
+            align-items: stretch;
+        }
+        .bracket-half .round {
+            padding-top: 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            min-width: 220px;
+            align-items: flex-start;
+        }
+        .bracket-half .round.last-of-half {
+            justify-content: center;
+        }
+        .bracket.split-mode .round.final-center {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            min-width: 220px;
+            padding-top: 1.5rem;
+            position: relative;
+        }
+        .bracket.split-mode .round.final-center .match {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.18);
+            border: 2px solid var(--primary);
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         ::-webkit-scrollbar { height: 8px; width: 8px; }
@@ -595,6 +697,30 @@
                 <!-- TEXTO ACTUALIZADO DINÁMICAMENTE POR JS -->
                 <p class="helper-text" id="participants-count-hint">Participantes: 0 / 16</p>
                 <textarea id="names-input" data-i18n-placeholder="setup_placeholder" placeholder="Juan Pérez&#10;María Gómez&#10;..."></textarea>
+
+                <!-- ✅ NUEVO: Selector de diseño del bracket -->
+                <div class="design-mode-selector">
+                    <label data-i18n="design_mode_label">Diseño del Bracket</label>
+                    <div class="design-options">
+                        <label class="design-option selected" data-design="single">
+                            <input type="radio" name="design-mode" value="single" checked>
+                            <span class="design-icon">📏</span>
+                            <span class="design-text">
+                                <span class="design-title" data-i18n="design_single">Lineal</span>
+                                <span class="design-sub" data-i18n="design_single_sub">Una sola columna</span>
+                            </span>
+                        </label>
+                        <label class="design-option" data-design="split">
+                            <input type="radio" name="design-mode" value="split">
+                            <span class="design-icon">⚖️</span>
+                            <span class="design-text">
+                                <span class="design-title" data-i18n="design_split">Doble</span>
+                                <span class="design-sub" data-i18n="design_split_sub">Dos bracket + final central</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
                 <button id="btn-start-tournament" style="width: 100%" data-i18n="btn_start">Generar Sorteo e Iniciar</button>
             </div>
         </section>
@@ -822,7 +948,12 @@
                 msg_export_error: "Error al exportar la imagen",
                 msg_no_export: "No hay bracket para exportar",
                 color_participant_name: "Color de los Nombres",
-                color_participant_bg: "Fondo de los Participantes"
+                color_participant_bg: "Fondo de los Participantes",
+                design_mode_label: "Diseño del Bracket",
+                design_single: "Lineal",
+                design_single_sub: "Una sola columna (actual)",
+                design_split: "Doble",
+                design_split_sub: "Dos bracket + final central"
             },
             en: {
                 app_title: "🏆 Tournament Pro",
@@ -895,7 +1026,12 @@
                 msg_export_error: "Error exporting image",
                 msg_no_export: "No bracket to export",
                 color_participant_name: "Name Color",
-                color_participant_bg: "Participant Background"
+                color_participant_bg: "Participant Background",
+                design_mode_label: "Bracket Layout",
+                design_single: "Linear",
+                design_single_sub: "Single column (current)",
+                design_split: "Split",
+                design_split_sub: "Two brackets + center final"
             },
             zh: {
                 app_title: "🏆 职业锦标赛",
@@ -968,7 +1104,12 @@
                 msg_export_error: "图片导出失败",
                 msg_no_export: "没有可导出的对阵图",
                 color_participant_name: "姓名颜色",
-                color_participant_bg: "参赛者背景"
+                color_participant_bg: "参赛者背景",
+                design_mode_label: "对阵图布局",
+                design_single: "线性",
+                design_single_sub: "单列（当前）",
+                design_split: "双半",
+                design_split_sub: "两个对阵 + 中央决赛"
             },
             ja: {
                 app_title: "🏆 プロトーナメント",
@@ -1041,7 +1182,12 @@
                 msg_export_error: "画像のエクスポートに失敗しました",
                 msg_no_export: "エクスポートするブラケットがありません",
                 color_participant_name: "名前の色",
-                color_participant_bg: "参加者の背景"
+                color_participant_bg: "参加者の背景",
+                design_mode_label: "ブラケットレイアウト",
+                design_single: "リニア",
+                design_single_sub: "単一列（現在）",
+                design_split: "分割",
+                design_split_sub: "2つのブラケット + 中央決勝"
             },
             ko: {
                 app_title: "🏆 프로 토너먼트",
@@ -1114,7 +1260,12 @@
                 msg_export_error: "이미지 내보내기 실패",
                 msg_no_export: "내보낼 대진표가 없습니다",
                 color_participant_name: "이름 색상",
-                color_participant_bg: "참가자 배경"
+                color_participant_bg: "참가자 배경",
+                design_mode_label: "브래킷 레이아웃",
+                design_single: "선형",
+                design_single_sub: "단일 열 (현재)",
+                design_split: "분할",
+                design_split_sub: "두 브래킷 + 중앙 결승"
             }
         };
 
@@ -1213,6 +1364,7 @@
         let tournamentData = {
             totalParticipants: 0,
             enableThirdPlace: false,
+            designMode: 'single', // ✅ NUEVO: 'single' (lineal) o 'split' (dos mitades + final central)
             rounds: [],
             thirdPlaceMatch: {
                 id: 'tp-final',
@@ -1254,6 +1406,8 @@
             els.namesInput.focus();
             els.bracket.innerHTML = `<div style="padding:2rem">${t('msg_configure')}</div>`;
             els.zoomControls.classList.remove('active');
+            // ✅ NUEVO: al crear desde cero, volver al diseño lineal por defecto
+            setDesignModeUI('single');
         });
 
         // ✅ NUEVO: Editar participantes reutilizando el espacio del setup
@@ -1278,6 +1432,9 @@
                 els.select.value = String(total);
             }
 
+            // ✅ NUEVO: pre-seleccionar el diseño actual del torneo
+            setDesignModeUI(tournamentData.designMode || 'single');
+
             // Refrescar el contador (si el usuario agrega más nombres,
             // el hint se pone en rojo y puede subir el tamaño con el dropdown).
             updateParticipantCountHint();
@@ -1291,6 +1448,25 @@
             els.setupArea.classList.add('active');
             els.namesInput.focus();
             els.setupArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        // ✅ NUEVO: helper para sincronizar el selector visual de diseño
+        function setDesignModeUI(mode) {
+            const radios = document.querySelectorAll('input[name="design-mode"]');
+            radios.forEach(r => {
+                r.checked = (r.value === mode);
+                const label = r.closest('.design-option');
+                if (label) label.classList.toggle('selected', r.checked);
+            });
+        }
+
+        // ✅ NUEVO: handler para resaltar la opción seleccionada al hacer click
+        document.querySelectorAll('input[name="design-mode"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.design-option').forEach(opt => opt.classList.remove('selected'));
+                const label = radio.closest('.design-option');
+                if (label) label.classList.add('selected');
+            });
         });
 
         els.btnReset.addEventListener('click', () => location.reload());
@@ -1383,6 +1559,10 @@
             const names = parseNames(els.namesInput.value);
             tournamentData.enableThirdPlace = els.thirdPlaceToggle.checked;
 
+            // ✅ NUEVO: leer el modo de diseño seleccionado
+            const selectedDesignRadio = document.querySelector('input[name="design-mode"]:checked');
+            const newDesignMode = selectedDesignRadio ? selectedDesignRadio.value : 'single';
+
             if (names.length !== total) {
                 showToast(t('msg_missing', {total: total, actual: names.length}), 'error');
                 return;
@@ -1391,6 +1571,7 @@
             // ✅ NUEVO: si venimos de "Editar" y NO cambió el tamaño,
             //    preservamos TODO (resultados, medallas, colores, 3er puesto)
             //    y solo remapeamos los nombres por posición en el textarea.
+            //    El modo de diseño se puede cambiar libremente (solo afecta visual).
             const canPreserve = isEditingMode
                              && tournamentData.rounds.length > 0
                              && total === tournamentData.totalParticipants;
@@ -1427,7 +1608,10 @@
                     tp.winner = rename(tp.winner);
                 }
 
-                // 5) Re-render (los medallistas se recalculan solos y
+                // 5) ✅ NUEVO: aplicar el nuevo modo de diseño (solo visual)
+                tournamentData.designMode = newDesignMode;
+
+                // 6) Re-render (los medallistas se recalculan solos y
                 //    los colores del podio siguen aplicándose igual)
                 renderBracket();
                 els.setupArea.classList.remove('active');
@@ -1438,6 +1622,7 @@
             }
 
             // Flujo original (torneo nuevo, o cambio de tamaño: 16→32, etc.)
+            tournamentData.designMode = newDesignMode; // ✅ NUEVO
             generateBracketData(total, names);
             renderBracket();
             els.setupArea.classList.remove('active');
@@ -1694,6 +1879,24 @@
             // ✅ Recalcular medallistas ANTES de construir las tarjetas
             currentMedalists = getMedalistsMap();
 
+            // ✅ NUEVO: decidir el modo de render según el diseño elegido
+            const designMode = tournamentData.designMode || 'single';
+            if (designMode === 'split' && totalRounds >= 2) {
+                renderSplitBracket(totalRounds);
+            } else {
+                renderSingleBracket(totalRounds);
+            }
+
+            // ✅ NUEVO: dibujar ramas tras renderizar
+            requestAnimationFrame(drawBracketLines);
+        }
+
+        // ============================================================
+        // RENDER MODO LINEAL (diseño original)
+        // ============================================================
+        function renderSingleBracket(totalRounds) {
+            els.bracket.classList.remove('split-mode');
+
             tournamentData.rounds.forEach((round, rIdx) => {
                 const rDiv = document.createElement('div');
                 rDiv.className = 'round';
@@ -1709,13 +1912,10 @@
                     rDiv.appendChild(createMatchElement(match, rIdx, isThisFinal, false, finalMatchClass));
                 });
 
-                                if (rIdx === totalRounds - 1 && tournamentData.enableThirdPlace) {
+                if (rIdx === totalRounds - 1 && tournamentData.enableThirdPlace) {
                     // ✅ Marcar este round como "final-round" para que CSS lo centre
                     rDiv.classList.add('final-round');
 
-                    // ✅ Envolver separator + 3er puesto en un wrapper posicionado
-                    //    absolutamente → la final queda centrada y las líneas SVG
-                    //    de las semifinales no se desalinean.
                     const wrapper = document.createElement('div');
                     wrapper.className = 'third-wrapper';
 
@@ -1732,9 +1932,93 @@
 
                 els.bracket.appendChild(rDiv);
             });
+        }
 
-            // ✅ NUEVO: dibujar ramas tras renderizar
-    requestAnimationFrame(drawBracketLines);
+        // ============================================================
+        // RENDER MODO DOBLE (dos mitades + final central)
+        // ============================================================
+        function renderSplitBracket(totalRounds) {
+            els.bracket.classList.add('split-mode');
+
+            // --- MITAD IZQUIERDA: rondas 0 .. totalRounds-2 (primera mitad de partidos) ---
+            const leftHalf = document.createElement('div');
+            leftHalf.className = 'bracket-half left-half';
+
+            for (let r = 0; r < totalRounds - 1; r++) {
+                const round = tournamentData.rounds[r];
+                const halfCount = round.length / 2;
+                const leftMatches = round.slice(0, halfCount);
+
+                const rDiv = document.createElement('div');
+                rDiv.className = 'round';
+                if (r === totalRounds - 2) rDiv.classList.add('last-of-half'); // semifinal
+
+                const title = document.createElement('div');
+                title.className = 'round-title';
+                title.textContent = getRoundName(tournamentData.totalParticipants, r, totalRounds);
+                rDiv.appendChild(title);
+
+                leftMatches.forEach(match => {
+                    rDiv.appendChild(createMatchElement(match, r, false, false, ''));
+                });
+
+                leftHalf.appendChild(rDiv);
+            }
+
+            // --- CENTRO: Final (y opcionalmente 3er puesto debajo) ---
+            const centerDiv = document.createElement('div');
+            centerDiv.className = 'round final-center';
+            if (tournamentData.enableThirdPlace) centerDiv.classList.add('final-round');
+
+            const finalTitle = document.createElement('div');
+            finalTitle.className = 'round-title';
+            finalTitle.textContent = getRoundName(tournamentData.totalParticipants, totalRounds - 1, totalRounds);
+            centerDiv.appendChild(finalTitle);
+
+            const finalMatch = tournamentData.rounds[totalRounds - 1][0];
+            centerDiv.appendChild(createMatchElement(finalMatch, totalRounds - 1, true, false, ''));
+
+            if (tournamentData.enableThirdPlace) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'third-wrapper';
+
+                const sep = document.createElement('div');
+                sep.className = 'third-place-separator';
+                sep.textContent = t('third_place_label');
+                wrapper.appendChild(sep);
+
+                wrapper.appendChild(renderThirdPlaceMatchElement());
+                centerDiv.appendChild(wrapper);
+            }
+
+            // --- MITAD DERECHA: rondas totalRounds-2 .. 0 (segunda mitad de partidos, en orden inverso) ---
+            const rightHalf = document.createElement('div');
+            rightHalf.className = 'bracket-half right-half';
+
+            for (let r = totalRounds - 2; r >= 0; r--) {
+                const round = tournamentData.rounds[r];
+                const halfCount = round.length / 2;
+                const rightMatches = round.slice(halfCount);
+
+                const rDiv = document.createElement('div');
+                rDiv.className = 'round';
+                if (r === totalRounds - 2) rDiv.classList.add('last-of-half'); // semifinal
+
+                const title = document.createElement('div');
+                title.className = 'round-title';
+                title.textContent = getRoundName(tournamentData.totalParticipants, r, totalRounds);
+                rDiv.appendChild(title);
+
+                rightMatches.forEach(match => {
+                    rDiv.appendChild(createMatchElement(match, r, false, false, ''));
+                });
+
+                rightHalf.appendChild(rDiv);
+            }
+
+            els.bracket.appendChild(leftHalf);
+            els.bracket.appendChild(centerDiv);
+            els.bracket.appendChild(rightHalf);
         }
 
         // ============================================================
@@ -1763,6 +2047,32 @@ function drawBracketLines() {
     const lx = x => (x - bracketRect.left) / zoom;
     const ly = y => (y - bracketRect.top) / zoom;
 
+    const designMode = tournamentData.designMode || 'single';
+    if (designMode === 'split' && tournamentData.rounds.length >= 2) {
+        drawSplitLines(svg, lx, ly, NS, bracket);
+    } else {
+        drawSingleLines(svg, lx, ly, NS, bracket);
+    }
+
+    bracket.appendChild(svg);
+}
+
+// Helper para crear un path SVG con estilo estándar
+function makeSvgPath(d, NS) {
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', '#000000');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    return path;
+}
+
+// ============================================================
+// LÍNEAS MODO LINEAL (diseño original)
+// ============================================================
+function drawSingleLines(svg, lx, ly, NS, bracket) {
     tournamentData.rounds.forEach((round, rIdx) => {
         if (rIdx >= tournamentData.rounds.length - 1) return;
         const nextRound = tournamentData.rounds[rIdx + 1];
@@ -1794,31 +2104,124 @@ function drawBracketLines() {
                 const xRightB = lx(rB.right);
                 const yB = ly(rB.top + rB.height / 2);
 
-                // ✅ La vertical DEBE cubrir yA, yB e yNext → usa min/max
                 const yTop = Math.min(yA, yB, yNext);
                 const yBot = Math.max(yA, yB, yNext);
 
-                d = `M ${xRightA} ${yA} H ${midX}` +        // horizontal desde mA
-                    ` M ${xRightB} ${yB} H ${midX}` +        // horizontal desde mB
-                    ` M ${midX} ${yTop} V ${yBot}` +         // vertical unificada
-                    ` M ${midX} ${yNext} H ${xNext}`;        // horizontal hacia el siguiente
+                d = `M ${xRightA} ${yA} H ${midX}` +
+                    ` M ${xRightB} ${yB} H ${midX}` +
+                    ` M ${midX} ${yTop} V ${yBot}` +
+                    ` M ${midX} ${yNext} H ${xNext}`;
             } else {
-                // Un solo partido alimenta la siguiente ronda: forma en L
                 d = `M ${xRightA} ${yA} H ${midX} V ${yNext} H ${xNext}`;
             }
 
-            const path = document.createElementNS(NS, 'path');
-            path.setAttribute('d', d);
-            path.setAttribute('stroke', '#000000');
-            path.setAttribute('stroke-width', '2');
-            path.setAttribute('fill', 'none');
-            path.setAttribute('stroke-linecap', 'round');
-            path.setAttribute('stroke-linejoin', 'round');
-            svg.appendChild(path);
+            svg.appendChild(makeSvgPath(d, NS));
         }
     });
+}
 
-    bracket.appendChild(svg);
+// ============================================================
+// LÍNEAS MODO DOBLE (dos mitades + final central)
+// ============================================================
+function drawSplitLines(svg, lx, ly, NS, bracket) {
+    const totalRounds = tournamentData.rounds.length;
+
+    for (let r = 0; r < totalRounds - 1; r++) {
+        const round = tournamentData.rounds[r];
+        const nextRound = tournamentData.rounds[r + 1];
+        const halfCount = round.length / 2;
+
+        for (let i = 0; i < round.length; i += 2) {
+            const mA = round[i];
+            const mB = round[i + 1];
+            const next = nextRound[Math.floor(i / 2)];
+            if (!next) continue;
+
+            const elA = bracket.querySelector(`[data-id="${mA.id}"]`);
+            const elNext = bracket.querySelector(`[data-id="${next.id}"]`);
+            if (!elA || !elNext) continue;
+
+            const rA = elA.getBoundingClientRect();
+            const rN = elNext.getBoundingClientRect();
+
+            // ¿Es esta la conexión semifinal → final?
+            // Ocurre cuando el par (i, i+1) cruza ambas mitades.
+            // En bracket de potencia de 2, esto pasa solo en r = totalRounds-2
+            // (ronda de semis) porque halfCount = 1 (impar).
+            const isCrossingFinal = (r === totalRounds - 2) && (halfCount % 2 === 1) && (i === halfCount - 1);
+
+            // Para otras rondas, el par está completamente en izquierda o derecha
+            const isLeftHalf = (i < halfCount);
+
+            if (isCrossingFinal) {
+                // Caso especial: mA = semifinal izquierda, mB = semifinal derecha
+                // Conectan a la final central desde lados opuestos.
+                //
+                // ✅ CORRECCIÓN: líneas RECTAS (puramente horizontales) que conectan
+                //    el centro vertical de cada semifinal con el centro vertical de
+                //    la final central. Antes usábamos un camino en "L" hasta la altura
+                //    de cada equipo destino (yFinalP1 / yFinalP2), lo que producía
+                //    líneas con doblez inclinada al estar la semifinal y la final
+                //    a alturas ligeramente distintas.
+                //
+                // Como en modo split ambas semifinales se alinean verticalmente con
+                // la final (justify-content:center en .last-of-half), el centro de
+                // cada semifinal coincide con el centro de la final → una sola
+                // línea horizontal recta de lado a lado.
+
+                const yFinalCenter = ly(rN.top + rN.height / 2);
+
+                // Conexión izquierda: borde derecho de la semifinal izquierda → borde izquierdo de la final
+                const xStartA = lx(rA.right);
+                const yA = ly(rA.top + rA.height / 2);
+                const xEndA = lx(rN.left);
+                const dA = `M ${xStartA} ${yA} H ${xEndA}`;
+                svg.appendChild(makeSvgPath(dA, NS));
+
+                // Conexión derecha: borde izquierdo de la semifinal derecha → borde derecho de la final
+                if (mB) {
+                    const elB = bracket.querySelector(`[data-id="${mB.id}"]`);
+                    if (!elB) continue;
+                    const rB = elB.getBoundingClientRect();
+                    const xStartB = lx(rB.left);
+                    const yB = ly(rB.top + rB.height / 2);
+                    const xEndB = lx(rN.right);
+                    const dB = `M ${xStartB} ${yB} H ${xEndB}`;
+                    svg.appendChild(makeSvgPath(dB, NS));
+                }
+            } else {
+                // Caso normal: par (i, i+1) en la misma mitad
+                // Izquierda: borde derecho → borde izquierdo del siguiente
+                // Derecha:   borde izquierdo → borde derecho del siguiente
+                const xStartA = isLeftHalf ? lx(rA.right) : lx(rA.left);
+                const yA = ly(rA.top + rA.height / 2);
+                const xEnd = isLeftHalf ? lx(rN.left) : lx(rN.right);
+                const yNext = ly(rN.top + rN.height / 2);
+                const midX = (xStartA + xEnd) / 2;
+
+                let d;
+                if (mB) {
+                    const elB = bracket.querySelector(`[data-id="${mB.id}"]`);
+                    if (!elB) continue;
+                    const rB = elB.getBoundingClientRect();
+                    const xStartB = isLeftHalf ? lx(rB.right) : lx(rB.left);
+                    const yB = ly(rB.top + rB.height / 2);
+
+                    const yTop = Math.min(yA, yB, yNext);
+                    const yBot = Math.max(yA, yB, yNext);
+
+                    d = `M ${xStartA} ${yA} H ${midX}` +
+                        ` M ${xStartB} ${yB} H ${midX}` +
+                        ` M ${midX} ${yTop} V ${yBot}` +
+                        ` M ${midX} ${yNext} H ${xEnd}`;
+                } else {
+                    d = `M ${xStartA} ${yA} H ${midX} V ${yNext} H ${xEnd}`;
+                }
+
+                svg.appendChild(makeSvgPath(d, NS));
+            }
+        }
+    }
 }
 
         function getScoreColorClass(score1, score2, myScore) {
